@@ -1,21 +1,16 @@
-import itertools
-
 import matplotlib.pyplot as plt
-import random as rnd
-from collections import namedtuple, deque
+from collections import deque
 import numpy as np
 import random
-import doctest
 
 import tensorflow as tf
 from tensorflow import keras
 
-import BatchLearning
-from Config import ConfigTimeSeries
-from TimeSeriesModel import TimeSeriesEnvironment
+from environment import BatchLearning
+from environment.Config import ConfigTimeSeries
+from environment.TimeSeriesModel import TimeSeriesEnvironment
 
 import seaborn as sb
-from sklearn.preprocessing import MinMaxScaler
 import logging
 
 # Global Variables
@@ -284,7 +279,7 @@ class DeepQNetwork():
 
 if __name__ == '__main__':
     tf.compat.v1.disable_eager_execution()
-    logging.basicConfig(filename='./Logs/window_debug.log', level=logging.DEBUG, filemode='w')
+    logging.basicConfig(filename='../Logs/window_debug.log', level=logging.DEBUG, filemode='w')
     # Create the agent
     config = ConfigTimeSeries(seperator=",", window=BatchLearning.SLIDE_WINDOW_SIZE)
     # Test on complete Timeseries from SwAT

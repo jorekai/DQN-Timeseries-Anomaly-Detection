@@ -1,21 +1,15 @@
-import itertools
-
 import matplotlib.pyplot as plt
-import random as rnd
-from collections import namedtuple, deque
+from collections import deque
 import numpy as np
 import random
-import doctest
 
 import tensorflow as tf
 from tensorflow import keras
 
-import BatchLearning
-from Config import ConfigTimeSeries
-from TimeSeriesModel import TimeSeriesEnvironment
+from environment.Config import ConfigTimeSeries
+from environment.TimeSeriesModel import TimeSeriesEnvironment
 
 import seaborn as sb
-from sklearn.preprocessing import MinMaxScaler
 import logging
 
 # Global Variables

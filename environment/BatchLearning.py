@@ -1,21 +1,12 @@
-import matplotlib.pyplot as plt
 import numpy as np
-import itertools
 import sys
 
-import sklearn.pipeline
-import sklearn.preprocessing
-
-import tensorflow as tf
-from tensorflow import keras
-from mpl_toolkits.mplot3d import axes3d
-
 # import the library in the sub-folder env
-from Config import ConfigTimeSeries
+from environment.Config import ConfigTimeSeries
 
 if "../" not in sys.path:
-    sys.path.append("../")
-from TimeSeriesModel import TimeSeriesEnvironment
+    sys.path.append("../../")
+from environment.TimeSeriesModel import TimeSeriesEnvironment
 
 SLIDE_WINDOW_SIZE = 20  # size of the slide window for SLIDE_WINDOW state and reward functions
 BATCH_PROCESSING = 1  # batch processing (1) or stochastic gradient (0)

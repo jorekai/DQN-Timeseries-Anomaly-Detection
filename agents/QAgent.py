@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 import random as rnd
-from collections import namedtuple
 import numpy as np
 
-from Config import ConfigTimeSeries
-from TimeSeriesModel import TimeSeriesEnvironment
+from environment.Config import ConfigTimeSeries
+from environment.TimeSeriesModel import TimeSeriesEnvironment
 
 import seaborn as sb
 from sklearn.preprocessing import MinMaxScaler
+
+from resources import Plots
 
 
 class QAgent:
@@ -124,7 +125,7 @@ if __name__ == '__main__':
     eps_start = 0.2
     eps_dec = 0.9993
     eps_end = 0.0
-    agent.env.plot()
+    Plots.plot_series(agent.env.get_series())
     while i < 10:
         agent.simulate()
         rewards.append(agent.rewardSum)

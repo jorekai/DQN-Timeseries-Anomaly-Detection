@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 if __name__ == '__main__':
-    swat_normal = pd.read_pickle("./ts_data/ds_swat_attack.pkl", compression=None)
+    swat_normal = pd.read_pickle("../ts_data/ds_swat_attack.pkl", compression=None)
     test = []
     test.append(swat_normal)
     print(test[0].columns)

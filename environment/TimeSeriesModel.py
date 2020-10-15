@@ -3,12 +3,12 @@ import numpy as np
 import os
 from sklearn.preprocessing import MinMaxScaler
 
-import Plots
-from Config import ConfigTimeSeries
+from resources import Plots
+from environment.Config import ConfigTimeSeries
 
 
 class TimeSeriesEnvironment:
-    def __init__(self, directory="./ts_data/",
+    def __init__(self, directory="../ts_data/",
                  config=ConfigTimeSeries(normal=0, anomaly=1, reward_correct=1, reward_incorrect=-1,
                                          action_space=[0, 1], seperator=",", boosted=False),
                  filename="Test/SmallData.csv", verbose=False,

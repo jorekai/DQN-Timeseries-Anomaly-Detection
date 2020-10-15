@@ -1,7 +1,7 @@
 import random
-from Config import ConfigTimeSeries
-from TimeSeriesModel import TimeSeriesEnvironment
-from utils import pretty_print_df
+from environment.Config import ConfigTimeSeries
+from environment.TimeSeriesModel import TimeSeriesEnvironment
+from resources.Utils import pretty_print_df
 
 
 class SampleFactory:
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     env = TimeSeriesEnvironment(verbose=False,
                                 config=ConfigTimeSeries(normal=0, anomaly=1, reward_correct=1, reward_incorrect=-1,
                                                         action_space=[0, 1], seperator=",", boosted=False),
-                                filename="./Test/SmallData.csv")
+                                filename="Test/SmallData.csv")
 
     factory = SampleFactory(timeseries=env.timeseries_labeled, labelled=True)
 

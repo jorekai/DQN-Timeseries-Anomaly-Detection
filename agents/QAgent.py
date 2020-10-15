@@ -53,7 +53,7 @@ class QAgent:
         self.get_reward(action)
 
     def get_reward(self, action_in):
-        current_state, action, reward, next_state, done = self.env.step(action_in)
+        current_state, action, reward, next_state, done = self.env.step_qtable(action_in)
         # print(current_state, action, reward, next_state, done)
         self.actions.append(action_in)
         self.Qtable[current_state, action] = self.Qtable[current_state, action] + self.alpha * (
@@ -63,7 +63,7 @@ class QAgent:
 
     def simulate(self):
         while not self.env.done:
-            self.act_explore_exploit(self.env.statefunction(self.env.timeseries_cursor))
+            self.act_explore_exploit(self.env.statefunction(self.env.timeseries_cursor, qtableagent=True))
         self.result["Reward"] = self.rewardList
         self.normalize_sum()
         print("Sum Rewards: " + str(self.rewardSum))
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     eps_dec = 0.9993
     eps_end = 0.0
     Plots.plot_series(agent.env.get_series())
-    while i < 10:
+    while i < 5:
         agent.simulate()
         rewards.append(agent.rewardSum)
         agent.reset_agent(TimeSeriesEnvironment(verbose=False, filename="Attack_FIT101csv.csv", config=config))

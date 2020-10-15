@@ -65,11 +65,13 @@ class TimeSeriesEnvironment:
             round(self.timeseries_labeled["value"].max(), 2),
             round(self.timeseries_labeled["value"].min(), 2))
 
-    def _get_state_q(self, timeseries_cursor):
+    def _get_state_q(self, timeseries_cursor, qtableagent=False):
         """
         :param timeseries_cursor: the position where in the TimeSeries we are currently
         :return: The Value of the current position, states with the same value are treated the same way
         """
+        if qtableagent:
+            return self.timeseries_labeled.index[timeseries_cursor]
         return np.float64(self.timeseries_labeled['value'][timeseries_cursor])
 
     def _get_reward_q(self, timeseries_cursor, action):
@@ -101,6 +103,15 @@ class TimeSeriesEnvironment:
         reward = self.rewardfunction(timeseries_cursor=self.timeseries_cursor, action=action_in)
         self.update_cursor()
         next_state = self.statefunction(timeseries_cursor=self.timeseries_cursor)
+        return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
+
+    # take a step and gain a reward
+    def step_qtable(self, action):
+        current_state = self.statefunction(timeseries_cursor=self.timeseries_cursor, qtableagent=True)
+        action_in = action
+        reward = self.rewardfunction(timeseries_cursor=self.timeseries_cursor, action=action_in)
+        self.update_cursor()
+        next_state = self.statefunction(timeseries_cursor=self.timeseries_cursor, qtableagent=True)
         return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
 
     # take a step and gain a reward

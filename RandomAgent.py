@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import random as rnd
+
+from Config import ConfigTimeSeries
 from TimeSeriesModel import TimeSeriesEnvironment
 import seaborn as sb
 from sklearn.preprocessing import MinMaxScaler
@@ -49,5 +51,9 @@ class RandomAgent():
 
 if __name__ == '__main__':
     agent = RandomAgent(
-        environment=TimeSeriesEnvironment(verbose=False, seperator=",", boosted=False, filename="Test/SmallData.csv"))
+        environment=TimeSeriesEnvironment(verbose=False,
+                                          config=ConfigTimeSeries(normal=0, anomaly=1, reward_correct=1,
+                                                                  reward_incorrect=-1,
+                                                                  action_space=[0, 1], seperator=",", boosted=False),
+                                          filename="./Test/SmallData.csv"))
     agent.simulate()

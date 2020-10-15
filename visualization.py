@@ -13,7 +13,7 @@ if __name__ == '__main__':
     plt.figure()
     test[0].plot(y="y", use_index=True)
     plt.show()
-    # for i in test[0].columns:
-    #     plt.figure()
-    #     plt.plot(test[0][i])
-    #     plt.show()
+    for i in test[0].columns:
+        plt.figure()
+        plt.plot(test[0][i])
+        plt.show()

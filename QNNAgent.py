@@ -359,11 +359,9 @@ if __name__ == '__main__':
     tf.compat.v1.disable_eager_execution()
     # logging.basicConfig(filename='./Logs/debug.log', level=logging.DEBUG, filemode='w')
     # Create the agent
-    config = ConfigTimeSeries(seperator=",", window=True)
+    config = ConfigTimeSeries(seperator=",")
     # Test on complete Timeseries from SwAT
-    env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config)
-    env.statefunction = BatchLearning.SlideWindowStateFuc
-    env.rewardfunction = BatchLearning.SlideWindowRewardFuc
+    env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=False)
     # env = TimeSeriesEnvironment(verbose=True, filename="./Attack_FIT101csv.csv", config=config)
 
     nS = env.timeseries_labeled.shape[1]  # This is only 4

@@ -1,21 +1,22 @@
-import matplotlib.pyplot as plt
+import pickle
 from collections import deque
 import numpy as np
 import random
 
+import time
 import tensorflow as tf
-from tensorflow import keras
 
+from agents.MemoryBuffer import MemoryBuffer
 from agents.NeuralNetwork import build_model
 from environment import BatchLearning
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
 
-import seaborn as sb
 import logging
 
 # Global Variables
 from resources.Plots import plot_actions
+from resources.Utils import store_object, load_object
 
 EPISODES = 2
 TRAIN_END = 0
@@ -28,7 +29,7 @@ class DeepQNetwork():
     def __init__(self, states, actions, alpha, gamma, epsilon, epsilon_min, epsilon_decay):
         self.nS = states
         self.nA = actions
-        self.memory = deque([], maxlen=50000)
+        self.memory = MemoryBuffer(max=50000)
         self.batch_size = BATCH_SIZE
         self.alpha = alpha
         self.gamma = gamma
@@ -45,74 +46,28 @@ class DeepQNetwork():
     def action(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.nA)  # Explore
-        # logging.debug("State at ACTION: {}".format([state]) + " Shape at ACTION: {}".format(state.shape))
-        # logging.debug("TypeOf State at ACTION: {}".format(type(state)))
-        print("STATE ACTION: {}".format(state))
         action_vals = self.model.predict([state])  # Exploit: Use the NN to predict the correct action from this state
-        # logging.debug("Action Values: " + str(action_vals))
         return np.argmax(action_vals)
 
     def test_action(self, state):  # Exploit
-        # print("TEST ACTION: {}".format(np.array(state).shape))
         action_vals = self.model_target.predict(np.array(state).reshape(1, BatchLearning.SLIDE_WINDOW_SIZE))
-        # logging.debug("State at ACTION: {}".format(np.array(state).reshape(1, 2)))
-        logging.debug("Action Values: {} at State: {}".format(action_vals, np.array(state).reshape(1,
-                                                                                                   BatchLearning.SLIDE_WINDOW_SIZE)))
-        # logging.debug("ARGMAX 0 : {} 01: {} 10. {}".format(action_vals[0], action_vals[0][1], action_vals[1][0]))
         return np.argmax(action_vals)
-
-    def store(self, state, action, reward, nstate, done):
-        # Store the experience in memory
-        # logging.debug("STORING IN MEMORY: {}".format((state, action, reward, nstate, done)))
-        self.memory.append((state, action, reward, nstate, done))
-
-    def init_memory(self, env):
-        # resetting environment once
-        env.reset()
-        while True:
-            # break if memory is full
-            if len(self.memory) >= self.memory.maxlen:
-                break
-            # check if we need to reset env
-            if env.is_done(env.timeseries_cursor):
-                env.reset()
-            # get random action
-            action = random.randrange(self.nA)
-            # take step in env and append
-            state, action, reward, nstate, done = env.step_window(action)
-            # logging.debug("INIT MEMORY: {}".format((state, action, reward, nstate, done)))
-            self.store(state, action, reward, nstate, done)
-        print("Memory is full, {} Samples stored.".format(len(self.memory)))
-
-    def get_exp(self, batch_size):
-        return [self.memory.popleft() for _i in range(batch_size)]  # Popping from the Memory Queue
 
     def experience_replay(self, batch_size, lstm):
         # get the batches as list so we can build tuples
-        minibatch = self.get_exp(batch_size)
+        minibatch = self.memory.get_exp(batch_size)
         # Execute the experience replay
-        # minibatch = random.sample(self.memory, batch_size)  # Randomly sample from memory
 
-        # print("MINIBATCH")
-        # print(minibatch)
         # Convert to numpy for speed by vectorization
         x = []
         y = []
         st = np.array(list(list(zip(*minibatch))[0]))
         nst = np.array(list(list(zip(*minibatch))[3]))
-        # print("STATE")
-        # print(st)
-        # print(st.shape)
-        # print("NSTATE")
-        # print(nst)
-        # print(nst.shape)
+
         st_predict = self.model.predict(st)  # Here is the speedup! I can predict on the ENTIRE batch
         nst_predict = self.model.predict(nst)
         nst_predict_target = self.model_target.predict(nst)  # Predict from the TARGET
-        # print("PREDICTION STATE")
-        # print(st_predict)
-        # print("PREDICTION NSTATE")
-        # print(nst_predict)
+
         index = 0
         for state, action, reward, nstate, done in minibatch:
             x.append(state)
@@ -133,12 +88,6 @@ class DeepQNetwork():
         y_reshape = np.array(y)
         epoch_count = 1
         self.hist = self.model.fit(x_reshape, y_reshape, epochs=epoch_count, verbose=0)
-        # Graph Losses
-        # for i in range(epoch_count):
-        #     self.loss.append(self.hist.history['loss'][i])
-        # plt.title("Loss of Batch")
-        # plt.plot(self.hist.history['loss'], label='train')
-        # plt.show()
 
     def train(self):
         rewards_training = []
@@ -236,6 +185,7 @@ class DeepQNetwork():
 
     def update_target_from_model(self):
         # Update the target model from the base model
+        print("Updating Target Model.")
         self.model_target.set_weights(self.model.get_weights())
 
 
@@ -253,7 +203,7 @@ if __name__ == '__main__':
     nS = env.timeseries_labeled.shape[1]  # This is only 4
     nA = env.action_space_n  # Actions
     dqn = DeepQNetwork(nS, nA, LEARNING_RATE, DISCOUNT_RATE, 1, 0, 0.9)
-    dqn.init_memory(env)
+    dqn.memory.init_memory(env)
     batch_size = BATCH_SIZE
     # Training
     rewards = []  # Store rewards for graphing
@@ -286,7 +236,7 @@ if __name__ == '__main__':
                                                                                nstate, done))
                 # nstate = np.reshape(nstate, [1, nS])
                 tot_rewards += reward
-                dqn.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
+                dqn.memory.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
                 state = nstate
                 if done:
                     # logging.debug("DONE")
@@ -297,7 +247,6 @@ if __name__ == '__main__':
                     break
                 # Experience Replay
                 if len(dqn.memory) > batch_size:
-                    print("Memory Replay, {} Samples left.".format(len(dqn.memory)))
                     dqn.experience_replay(batch_size, lstm=False)
             if e % 5 == 0:
                 dqn.update_target_from_model()

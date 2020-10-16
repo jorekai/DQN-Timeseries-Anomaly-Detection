@@ -32,9 +32,9 @@ def SlideWindowRewardFuc(timeseries, timeseries_cursor, action):
         if np.sum(timeseries['anomaly']
                   [timeseries_cursor - SLIDE_WINDOW_SIZE + 1:timeseries_cursor + 1]) > 0:
             if action == 0:
-                return -1  # false negative, miss alarm
+                return -5  # false negative, miss alarm
             else:
-                return 1  # 10      # true positive
+                return 5  # 10      # true positive
     else:
         return 0
 

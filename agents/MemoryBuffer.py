@@ -1,3 +1,4 @@
+import os
 import random
 import time
 from collections import deque
@@ -19,9 +20,8 @@ class MemoryBuffer:
         # resetting environment once
         env.reset()
         # try to load memory from local file
-        mem = load_object("memory.obj")
-        if mem is not None:
-            self.memory = mem
+        if os.path.isfile("memory.obj"):
+            self.memory = load_object("memory.obj")
         # try to init memory by taking random steps in our environment until the deque is full
         else:
             while True:
@@ -32,7 +32,7 @@ class MemoryBuffer:
                 if env.is_done(env.timeseries_cursor):
                     env.reset()
                 # get random action
-                action = random.randrange(self.nA)
+                action = random.randrange(env.action_space_n)
                 # take step in env and append
                 state, action, reward, nstate, done = env.step_window(action)
                 # store our memory in class

@@ -18,9 +18,9 @@ import logging
 from resources.Plots import plot_actions
 from resources.Utils import store_object, load_object
 
-EPISODES = 2
+EPISODES = 251
 TRAIN_END = 0
-DISCOUNT_RATE = 0.9
+DISCOUNT_RATE = 0.5
 LEARNING_RATE = 0.001
 BATCH_SIZE = 512
 
@@ -199,6 +199,7 @@ if __name__ == '__main__':
     # env = TimeSeriesEnvironment(verbose=True, filename="./Attack_FIT101csv.csv", config=config, window=True)
     env.statefunction = BatchLearning.SlideWindowStateFuc
     env.rewardfunction = BatchLearning.SlideWindowRewardFuc
+    env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
 
     nS = env.timeseries_labeled.shape[1]  # This is only 4
     nA = env.action_space_n  # Actions
@@ -217,7 +218,7 @@ if __name__ == '__main__':
             logging.debug("e/E: {}/{}".format(e, EPISODES))
             test = True
         # logging.debug("--------------EPISODE: {}-----------".format(e))
-        state = env.reset()
+        state = env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
         # logging.debug("TypeOf State at INIT: {}".format(type(state)))
         # logging.debug("State at INIT: {}".format(state) + " Shape at INIT: {}".format(state.shape))
         # state = np.reshape(1, 2)  # Resize to store in memory to pass to .predict
@@ -248,7 +249,7 @@ if __name__ == '__main__':
                 # Experience Replay
                 if len(dqn.memory) > batch_size:
                     dqn.experience_replay(batch_size, lstm=False)
-            if e % 5 == 0:
+            if e % 10 == 0:
                 dqn.update_target_from_model()
         if test:
             dqn.test(env, dqn, rewards=rewards, actions=actions)

@@ -6,6 +6,7 @@ import random
 import tensorflow as tf
 from tensorflow import keras
 
+from agents.NeuralNetwork import build_model
 from environment import BatchLearning
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
@@ -14,39 +15,13 @@ import seaborn as sb
 import logging
 
 # Global Variables
+from resources.Plots import plot_actions
+
 EPISODES = 2
 TRAIN_END = 0
 DISCOUNT_RATE = 0.9
 LEARNING_RATE = 0.001
 BATCH_SIZE = 512
-
-
-def plot_actions(actions, series):
-    plt.figure(figsize=(15, 7))
-    plt.plot(series.index, actions, label="Actions", linestyle="solid")
-    plt.plot(series.index, series["anomaly"], label="True Label", linestyle="dotted")
-    plt.plot(series.index, series["value"], label="Series", linestyle="dashed")
-    plt.legend()
-    plt.ylabel('Reward Sum')
-    plt.show()
-
-
-def plot_learn(data):
-    plt.figure(figsize=(15, 7))
-    sb.lineplot(
-        data=data,
-    ).set_title("Learning")
-    plt.ylabel('Reward Sum')
-    plt.show()
-
-
-def plot_reward(result):
-    plt.figure(figsize=(15, 7))
-    sb.lineplot(
-        data=result,
-    ).set_title("Reward Random vs Series")
-    plt.ylabel('Reward Sum')
-    plt.show()
 
 
 class DeepQNetwork():
@@ -61,24 +36,11 @@ class DeepQNetwork():
         self.epsilon = epsilon
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
-        self.model = self.build_model()
-        self.model_target = self.build_model()  # Second (target) neural network
+        self.model = build_model()
+        self.model_target = build_model()  # Second (target) neural network
         self.update_target_from_model()  # Update weights
         self.hist = None
         self.loss = []
-
-    def build_model(self):
-        model = keras.Sequential()  # linear stack of layers https://keras.io/models/sequential/
-        model.add(keras.layers.Dense(24, input_dim=BatchLearning.SLIDE_WINDOW_SIZE,
-                                     activation='relu'))  # [Input] -> Layer 1
-        model.add(keras.layers.Dense(48, activation='relu'))  # Layer 3 -> [output]
-        # model.add(keras.layers.Dropout(0.2))
-        model.add(keras.layers.Dense(48, activation='relu'))  # Layer 3 -> [output]
-        model.add(keras.layers.Dense(self.nA, activation='linear'))  # Layer 3 -> [output]
-        model.compile(loss='mean_squared_error',  # Loss function: Mean Squared Error
-                      optimizer=keras.optimizers.Adam(
-                          lr=self.alpha))  # Optimaizer: Adam (Feel free to check other options)
-        return model
 
     def action(self, state):
         if np.random.rand() <= self.epsilon:

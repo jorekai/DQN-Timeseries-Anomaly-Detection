@@ -1,4 +1,5 @@
 import pickle
+import time
 
 
 def pretty_print_df(dataframe, head=True):
@@ -18,3 +19,11 @@ def load_object(filename):
     object = pickle.load(file)
     print("Successfully loaded Object from {}".format(filename))
     return object
+
+
+def start_timer():
+    return time.time()
+
+
+def get_duration(timer):
+    return time.time() - timer

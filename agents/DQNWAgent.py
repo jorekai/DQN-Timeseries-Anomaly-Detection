@@ -1,15 +1,10 @@
 import numpy as np
 import random
-import logging
-import tensorflow as tf
 
 # custom modules
 from agents.MemoryBuffer import MemoryBuffer
 from agents.NeuralNetwork import build_model
 from environment import BatchLearning
-from environment.Config import ConfigTimeSeries
-from environment.TimeSeriesModel import TimeSeriesEnvironment
-from resources.Plots import plot_actions
 
 # Global Variables
 EPISODES = 21
@@ -39,7 +34,8 @@ class DDQNWAgent:
     def action(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.nA)  # Explore
-        action_vals = self.model.predict([state])  # Exploit: Use the NN to predict the correct action from this state
+        action_vals = self.model.predict(np.array(state).reshape(1,
+                                                                 BatchLearning.SLIDE_WINDOW_SIZE))  # Exploit: Use the NN to predict the correct action from this state
         return np.argmax(action_vals)
 
     def test_action(self, state):  # Exploit
@@ -82,110 +78,9 @@ class DDQNWAgent:
         epoch_count = 2
         self.hist = self.model.fit(x_reshape, y_reshape, epochs=epoch_count, verbose=0)
 
-    def train(self):
-        for time in range(len(
-                env.timeseries_labeled)):
-            action = dqn.action(state)
-            actions_episode.append(action)
-            state, action, reward, nstate, done = env.step_window(action)
-            tot_rewards += reward
-            dqn.memory.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
-            state = nstate
-            if done:
-                rewards.append(tot_rewards)
-                epsilons.append(dqn.epsilon)
-                break
-            # Experience Replay
-            if len(dqn.memory) > batch_size:
-                dqn.experience_replay(batch_size, lstm=False)
-        if e % 5 == 0:
-            dqn.update_target_from_model()
-
-    def test(self, env, agent, rewards, actions):
-        state, experience, test, test_states, done, total_rewards = self.init_test(env, agent)
-        env.reset()
-        for time in range(len(
-                env.timeseries_labeled)):  # 200 is when you "solve" the game. This can continue forever as far as I know
-            if done:
-                rewards.append(total_rewards)
-                epsilons.append(dqn.epsilon)
-                test_states.append(env.statefunction(env.timeseries_labeled, env.timeseries_cursor))
-                actions_episode.append(action)
-                break
-            action = dqn.test_action(state)
-            actions_episode.append(action)
-            state, action, reward, nstate, done = env.step_window(action)
-            test.append("State: {} Action: {} Reward: {} State_: {}".format(state, action, reward, nstate))
-            test_states.append(state)
-            total_rewards += reward
-            state = nstate
-        actions.append(actions_episode)
-
-    def init_test(self, env, agent):
-        """
-        :param env: Reset the given environment
-        :param agent: Reset the given agents action
-        :return: state, action, experience, test, test_states, done, total_rewards
-        """
-        # Reset the given environment and agent
-        state = env.reset()
-        agent.epsilon = 0
-        experience = []
-        test = []
-        test_states = []
-        done = False
-        total_rewards = 0
-        return state, experience, test, test_states, done, total_rewards
-
     def update_target_from_model(self):
         # Update the target model from the base model
         self.model_target.set_weights(self.model.get_weights())
 
-
-if __name__ == '__main__':
-    tf.compat.v1.disable_eager_execution()
-    logging.basicConfig(filename='../Logs/window_debug.log', level=logging.DEBUG, filemode='w')
-    # Create the agent
-    config = ConfigTimeSeries(seperator=",", window=BatchLearning.SLIDE_WINDOW_SIZE)
-    # Test on complete Timeseries from SwAT
-    env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
-    env.statefunction = BatchLearning.SlideWindowStateFuc
-    env.rewardfunction = BatchLearning.SlideWindowRewardFuc
-    env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
-
-    dqn = DDQNWAgent(env.action_space_n, LEARNING_RATE, DISCOUNT_RATE, 1, 0, 0.9)
-    dqn.memory.init_memory(env)
-
-    batch_size = BATCH_SIZE
-    # Training
-    rewards = []  # Store rewards for graphing
-    epsilons = []  # Store the Explore/Exploit
-    actions = []
-    test = False
-    for e in range(EPISODES):
-        actions_episode = []
-        if e >= EPISODES - 1:
-            test = True
-        state = env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
-        tot_rewards = 0
-        if not test:
-            for time in range(len(
-                    env.timeseries_labeled)):
-                action = dqn.action(state)
-                actions_episode.append(action)
-                state, action, reward, nstate, done = env.step_window(action)
-                tot_rewards += reward
-                dqn.memory.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
-                state = nstate
-                if done:
-                    rewards.append(tot_rewards)
-                    epsilons.append(dqn.epsilon)
-                    break
-                # Experience Replay
-                if len(dqn.memory) > batch_size:
-                    dqn.experience_replay(batch_size, lstm=False)
-            if e % 5 == 0:
-                dqn.update_target_from_model()
-        if test:
-            dqn.test(env, dqn, rewards=rewards, actions=actions)
-    plot_actions(actions[-1], env.timeseries_labeled)
+    def anneal_eps(self):
+        self.epsilon = max(self.epsilon_min, self.epsilon_decay * self.epsilon)

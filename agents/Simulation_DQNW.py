@@ -1,7 +1,10 @@
+import tensorflow as tf
 from agents.DQNWAgent import DDQNWAgent
 from environment import BatchLearning
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
+from resources import Utils as utils
+from resources.Plots import plot_actions
 
 
 class Simulator:
@@ -9,11 +12,17 @@ class Simulator:
     This class is used to train and to test the agent in its environment
     """
 
-    def __init__(self, max_episodes, agent, environment):
+    def __init__(self, max_episodes, agent, environment, update_steps):
         self.max_episodes = max_episodes
         self.episode = 1
         self.agent = agent
-        self.environment = environment
+        self.env = environment
+        self.update_steps = update_steps
+
+        # information variables
+        self.training_scores = []
+        self.test_scores = []
+        self.test_actions = []
 
     def run(self):
         """
@@ -21,29 +30,82 @@ class Simulator:
         :return: True if finished
         """
         while True:
-            if self.train():
-                print("Training {}".format(self.episode))
+            start = utils.start_timer()
+            start_testing = self.can_test()
+            if not start_testing:
+                info = self.training_iteration()
+                print("Training episode {} took {} seconds {}".format(self.episode, utils.get_duration(start), info))
                 self.next()
-            if not self.train():
-                print("Testing {}".format(self.episode))
+            if start_testing:
+                self.testing_iteration()
+                print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
+            self.agent.anneal_eps()
+            print(self.agent.epsilon)
+        print(self.training_scores)
+        plot_actions(self.test_actions[0], self.env.timeseries_labeled)
         return True
 
-    def train(self):
+    def can_test(self):
         if self.episode >= self.max_episodes:
-            return False
-        return True
+            return True
+        return False
 
     def next(self):
         self.episode += 1
 
+    def training_iteration(self):
+        rewards = 0
+        state = self.env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
+        for idx in range(len(
+                self.env.timeseries_labeled)):
+            action = self.agent.action(state)
+            state, action, reward, nstate, done = self.env.step_window(action)
+            rewards += reward
+            self.agent.memory.store(state, action, reward, nstate, done)
+            state = nstate
+            if done:
+                self.training_scores.append(rewards)
+                break
+            # Experience Replay
+            if len(self.agent.memory) > self.agent.batch_size:
+                self.agent.experience_replay(self.agent.batch_size, lstm=False)
+        # Target Model Update
+        if self.episode % self.update_steps == 0:
+            self.agent.update_target_from_model()
+            return "Update Target Model"
+        return ""
+
+    def testing_iteration(self):
+        rewards = []
+        actions = []
+        state = self.env.reset()
+        self.agent.epsilon = 0
+        for idx in range(len(
+                self.env.timeseries_labeled)):
+            action = self.agent.test_action(state)
+            actions.append(action)
+            state, action, reward, nstate, done = self.env.step_window(action)
+            rewards.append(reward)
+            state = nstate
+            if done:
+                actions.append(action)
+                self.test_scores.append(rewards)
+                self.test_actions.append(actions)
+                break
+
 
 if __name__ == '__main__':
+    tf.compat.v1.disable_eager_execution()
+    # Create the agent
     config = ConfigTimeSeries(seperator=",", window=BatchLearning.SLIDE_WINDOW_SIZE)
+    # Test on complete Timeseries from SwAT
     env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
     env.statefunction = BatchLearning.SlideWindowStateFuc
     env.rewardfunction = BatchLearning.SlideWindowRewardFuc
     env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
-    dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
-    simulation = Simulator(10, dqn, env)
+
+    dqn = DDQNWAgent(env.action_space_n, 0.01, 0.9, 1, 0, 0.9)
+    dqn.memory.init_memory(env)
+    simulation = Simulator(11, dqn, env, 5)
     simulation.run()

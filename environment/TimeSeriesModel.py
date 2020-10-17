@@ -33,6 +33,7 @@ class TimeSeriesEnvironment:
         self.timeseries_cursor = -1
         self.timeseries_cursor_init = 0
         self.timeseries_states = []
+        self.done = False
 
         self.statefunction = self._get_state_q
         self.rewardfunction = self._get_reward_q

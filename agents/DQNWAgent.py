@@ -1,23 +1,17 @@
-import pickle
-from collections import deque
 import numpy as np
 import random
-
-import time
+import logging
 import tensorflow as tf
 
+# custom modules
 from agents.MemoryBuffer import MemoryBuffer
 from agents.NeuralNetwork import build_model
 from environment import BatchLearning
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
-
-import logging
+from resources.Plots import plot_actions
 
 # Global Variables
-from resources.Plots import plot_actions
-from resources.Utils import store_object, load_object
-
 EPISODES = 21
 TRAIN_END = 0
 DISCOUNT_RATE = 0.5
@@ -25,9 +19,8 @@ LEARNING_RATE = 0.001
 BATCH_SIZE = 512
 
 
-class DeepQNetwork():
-    def __init__(self, states, actions, alpha, gamma, epsilon, epsilon_min, epsilon_decay):
-        self.nS = states
+class DDQNWAgent:
+    def __init__(self, actions, alpha, gamma, epsilon, epsilon_min, epsilon_decay):
         self.nA = actions
         self.memory = MemoryBuffer(max=50000)
         self.batch_size = BATCH_SIZE
@@ -90,27 +83,23 @@ class DeepQNetwork():
         self.hist = self.model.fit(x_reshape, y_reshape, epochs=epoch_count, verbose=0)
 
     def train(self):
-        rewards_training = []
-        actions_training = []
-
-        state = env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
-        tot_rewards = 0
         for time in range(len(
                 env.timeseries_labeled)):
             action = dqn.action(state)
-            actions_training.append(action)
-            state, action, reward, nstate, done = env.step(action)
+            actions_episode.append(action)
+            state, action, reward, nstate, done = env.step_window(action)
             tot_rewards += reward
-            dqn.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
+            dqn.memory.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
             state = nstate
             if done:
-                # logging.debug("DONE")
                 rewards.append(tot_rewards)
                 epsilons.append(dqn.epsilon)
                 break
             # Experience Replay
             if len(dqn.memory) > batch_size:
-                dqn.experience_replay(batch_size)
+                dqn.experience_replay(batch_size, lstm=False)
+        if e % 5 == 0:
+            dqn.update_target_from_model()
 
     def test(self, env, agent, rewards, actions):
         state, experience, test, test_states, done, total_rewards = self.init_test(env, agent)
@@ -128,7 +117,6 @@ class DeepQNetwork():
             state, action, reward, nstate, done = env.step_window(action)
             test.append("State: {} Action: {} Reward: {} State_: {}".format(state, action, reward, nstate))
             test_states.append(state)
-            # nstate = np.reshape(nstate, [1, nS])
             total_rewards += reward
             state = nstate
         actions.append(actions_episode)
@@ -161,15 +149,13 @@ if __name__ == '__main__':
     config = ConfigTimeSeries(seperator=",", window=BatchLearning.SLIDE_WINDOW_SIZE)
     # Test on complete Timeseries from SwAT
     env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
-    # env = TimeSeriesEnvironment(verbose=True, filename="./Attack_FIT101csv.csv", config=config, window=True)
     env.statefunction = BatchLearning.SlideWindowStateFuc
     env.rewardfunction = BatchLearning.SlideWindowRewardFuc
     env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
 
-    nS = env.timeseries_labeled.shape[1]  # This is only 4
-    nA = env.action_space_n  # Actions
-    dqn = DeepQNetwork(nS, nA, LEARNING_RATE, DISCOUNT_RATE, 1, 0, 0.9)
+    dqn = DDQNWAgent(env.action_space_n, LEARNING_RATE, DISCOUNT_RATE, 1, 0, 0.9)
     dqn.memory.init_memory(env)
+
     batch_size = BATCH_SIZE
     # Training
     rewards = []  # Store rewards for graphing
@@ -184,11 +170,10 @@ if __name__ == '__main__':
         tot_rewards = 0
         if not test:
             for time in range(len(
-                    env.timeseries_labeled)):  # 200 is when you "solve" the game. This can continue forever as far as I know
+                    env.timeseries_labeled)):
                 action = dqn.action(state)
                 actions_episode.append(action)
                 state, action, reward, nstate, done = env.step_window(action)
-                # nstate = np.reshape(nstate, [1, nS])
                 tot_rewards += reward
                 dqn.memory.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
                 state = nstate

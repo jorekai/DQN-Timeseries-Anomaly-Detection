@@ -18,7 +18,7 @@ import logging
 from resources.Plots import plot_actions
 from resources.Utils import store_object, load_object
 
-EPISODES = 251
+EPISODES = 21
 TRAIN_END = 0
 DISCOUNT_RATE = 0.5
 LEARNING_RATE = 0.001
@@ -86,25 +86,20 @@ class DeepQNetwork():
         # Reshape for Keras Fit
         x_reshape = np.array(x)
         y_reshape = np.array(y)
-        epoch_count = 1
+        epoch_count = 2
         self.hist = self.model.fit(x_reshape, y_reshape, epochs=epoch_count, verbose=0)
 
     def train(self):
         rewards_training = []
         actions_training = []
 
-        state = env.reset()
+        state = env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
         tot_rewards = 0
         for time in range(len(
                 env.timeseries_labeled)):
-            logging.debug("State at time: {}".format(time) + " " + str(state))
             action = dqn.action(state)
             actions_training.append(action)
             state, action, reward, nstate, done = env.step(action)
-            logging.debug(
-                "Step Results at {}: S {}, A {}, R {}, S_ {}, D {}".format(env.timeseries_cursor, state, action,
-                                                                           reward,
-                                                                           nstate, done))
             tot_rewards += reward
             dqn.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
             state = nstate
@@ -112,58 +107,30 @@ class DeepQNetwork():
                 # logging.debug("DONE")
                 rewards.append(tot_rewards)
                 epsilons.append(dqn.epsilon)
-                logging.debug("episode: {}/{}, score: {}, e: {}"
-                              .format(e, EPISODES, tot_rewards, dqn.epsilon))
                 break
             # Experience Replay
             if len(dqn.memory) > batch_size:
                 dqn.experience_replay(batch_size)
 
     def test(self, env, agent, rewards, actions):
-        print("TESTING STAGE")
         state, experience, test, test_states, done, total_rewards = self.init_test(env, agent)
         env.reset()
-        print("---TEST INIT RESULTS")
-        print(state, experience, test, test_states, done, total_rewards)
         for time in range(len(
                 env.timeseries_labeled)):  # 200 is when you "solve" the game. This can continue forever as far as I know
-            logging.debug("---ITERATION START--{}----".format(time))
-            # logging.debug("State at time: {}".format(time) + " " + str(state))
             if done:
-                # logging.debug("DONE")
                 rewards.append(total_rewards)
                 epsilons.append(dqn.epsilon)
                 test_states.append(env.statefunction(env.timeseries_labeled, env.timeseries_cursor))
-                # test_states.append(env.statefunction(env.timeseries_labeled, env.timeseries_cursor))
                 actions_episode.append(action)
-                logging.debug("Testing Performance: {}/{}, score: {}"
-                              .format(e, EPISODES, total_rewards))
                 break
             action = dqn.test_action(state)
             actions_episode.append(action)
             state, action, reward, nstate, done = env.step_window(action)
-            # state, action, reward, nstate, done = env.step_window(action)
             test.append("State: {} Action: {} Reward: {} State_: {}".format(state, action, reward, nstate))
             test_states.append(state)
-            logging.debug(
-                "Step Results at {}: S {}, A {}, R {}, S_ {}, D {}".format(env.timeseries_cursor, state, action,
-                                                                           reward,
-                                                                           nstate, done))
             # nstate = np.reshape(nstate, [1, nS])
             total_rewards += reward
             state = nstate
-            logging.debug("---ITERATION END--{}----".format(time))
-        logging.debug("--------")
-        logging.debug(len(env.timeseries_labeled))
-        logging.debug(len(test_states))
-        logging.debug(len(actions_episode))
-        logging.debug("--------")
-        logging.debug(env.timeseries_labeled)
-        logging.debug("--------")
-        logging.debug(test_states)
-        logging.debug("--------")
-        # logging.debug(test)
-
         actions.append(actions_episode)
 
     def init_test(self, env, agent):
@@ -174,7 +141,6 @@ class DeepQNetwork():
         """
         # Reset the given environment and agent
         state = env.reset()
-        print(state)
         agent.epsilon = 0
         experience = []
         test = []
@@ -185,7 +151,6 @@ class DeepQNetwork():
 
     def update_target_from_model(self):
         # Update the target model from the base model
-        print("Updating Target Model.")
         self.model_target.set_weights(self.model.get_weights())
 
 
@@ -212,47 +177,30 @@ if __name__ == '__main__':
     actions = []
     test = False
     for e in range(EPISODES):
-        print("LEARNING EPISODE: {}".format(e))
         actions_episode = []
         if e >= EPISODES - 1:
-            logging.debug("e/E: {}/{}".format(e, EPISODES))
             test = True
-        # logging.debug("--------------EPISODE: {}-----------".format(e))
         state = env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
-        # logging.debug("TypeOf State at INIT: {}".format(type(state)))
-        # logging.debug("State at INIT: {}".format(state) + " Shape at INIT: {}".format(state.shape))
-        # state = np.reshape(1, 2)  # Resize to store in memory to pass to .predict
         tot_rewards = 0
         if not test:
             for time in range(len(
                     env.timeseries_labeled)):  # 200 is when you "solve" the game. This can continue forever as far as I know
-                # logging.debug("State at time: {}".format(time) + " " + str(state))
                 action = dqn.action(state)
                 actions_episode.append(action)
                 state, action, reward, nstate, done = env.step_window(action)
-                # state, action, reward, nstate, done = env.step_window(action)
-                logging.debug(
-                    "Step Results at {}: S {}, A {}, R {}, S_ {}, D {}".format(env.timeseries_cursor, state, action,
-                                                                               reward,
-                                                                               nstate, done))
                 # nstate = np.reshape(nstate, [1, nS])
                 tot_rewards += reward
                 dqn.memory.store(state, action, reward, nstate, done)  # Resize to store in memory to pass to .predict
                 state = nstate
                 if done:
-                    # logging.debug("DONE")
                     rewards.append(tot_rewards)
                     epsilons.append(dqn.epsilon)
-                    logging.debug("episode: {}/{}, score: {}, e: {}"
-                                  .format(e, EPISODES, tot_rewards, dqn.epsilon))
                     break
                 # Experience Replay
                 if len(dqn.memory) > batch_size:
                     dqn.experience_replay(batch_size, lstm=False)
-            if e % 10 == 0:
+            if e % 5 == 0:
                 dqn.update_target_from_model()
         if test:
             dqn.test(env, dqn, rewards=rewards, actions=actions)
-    logging.debug(actions[-1])
-    print(dqn.hist)
     plot_actions(actions[-1], env.timeseries_labeled)

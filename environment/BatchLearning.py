@@ -9,7 +9,6 @@ if "../" not in sys.path:
 from environment.TimeSeriesModel import TimeSeriesEnvironment
 
 SLIDE_WINDOW_SIZE = 20  # size of the slide window for SLIDE_WINDOW state and reward functions
-BATCH_PROCESSING = 1  # batch processing (1) or stochastic gradient (0)
 
 
 def SlideWindowStateFuc(timeseries, timeseries_cursor, timeseries_states=None, action=None):

@@ -11,7 +11,7 @@ EPISODES = 21
 TRAIN_END = 0
 DISCOUNT_RATE = 0.5
 LEARNING_RATE = 0.001
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 
 
 class DDQNWAgent:
@@ -34,12 +34,12 @@ class DDQNWAgent:
     def action(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.nA)  # Explore
-        action_vals = self.model.predict(np.array(state).reshape(1,
-                                                                 BatchLearning.SLIDE_WINDOW_SIZE))  # Exploit: Use the NN to predict the correct action from this state
-        return np.argmax(action_vals)
-
-    def test_action(self, state):  # Exploit
-        action_vals = self.model_target.predict(np.array(state).reshape(1, BatchLearning.SLIDE_WINDOW_SIZE))
+        if self.epsilon == 0:
+            action_vals = self.model_target.predict(np.array(state).reshape(1,
+                                                                            BatchLearning.SLIDE_WINDOW_SIZE))
+        else:
+            action_vals = self.model.predict(np.array(state).reshape(1,
+                                                                     BatchLearning.SLIDE_WINDOW_SIZE))  # Exploit: Use the NN to predict the correct action from this state
         return np.argmax(action_vals)
 
     def experience_replay(self, batch_size, lstm):

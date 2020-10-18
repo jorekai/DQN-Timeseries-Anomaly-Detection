@@ -1,6 +1,6 @@
 class ConfigTimeSeries:
     def __init__(self, normal=0, anomaly=1, reward_correct=1, reward_incorrect=-1,
-                 action_space=[0, 1], seperator=",", boosted=False, window=10):
+                 action_space=[0, 1], seperator=",", boosted=False, window=20):
         self.action_space = action_space
         self.reward_incorrect = reward_incorrect
         self.reward_correct = reward_correct

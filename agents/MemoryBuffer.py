@@ -3,6 +3,7 @@ import random
 import time
 from collections import deque
 
+from environment import BatchLearning
 from resources.Utils import load_object, store_object
 
 
@@ -45,6 +46,7 @@ class MemoryBuffer:
     def get_exp(self, batch_size):
         # Popping from the Memory Queue which should be filled randomly beforehand
         return [self.memory.popleft() for _i in range(batch_size)]
+        # return random.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)

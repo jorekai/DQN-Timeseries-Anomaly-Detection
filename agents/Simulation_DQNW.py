@@ -21,7 +21,7 @@ class Simulator:
 
         # information variables
         self.training_scores = []
-        self.test_scores = []
+        self.test_rewards = []
         self.test_actions = []
 
     def run(self):
@@ -41,8 +41,6 @@ class Simulator:
                 print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
             self.agent.anneal_eps()
-            print(self.agent.epsilon)
-        print(self.training_scores)
         plot_actions(self.test_actions[0], self.env.timeseries_labeled)
         return True
 
@@ -56,7 +54,7 @@ class Simulator:
 
     def training_iteration(self):
         rewards = 0
-        state = self.env.reset(BatchLearning.SLIDE_WINDOW_SIZE)
+        state = self.env.reset()
         for idx in range(len(
                 self.env.timeseries_labeled)):
             action = self.agent.action(state)
@@ -77,20 +75,25 @@ class Simulator:
         return ""
 
     def testing_iteration(self):
-        rewards = []
+        rewards = 0
         actions = []
         state = self.env.reset()
         self.agent.epsilon = 0
         for idx in range(len(
                 self.env.timeseries_labeled)):
-            action = self.agent.test_action(state)
+            action = self.agent.action(state)
             actions.append(action)
+            print("At Timestamp: " + str(idx))
             state, action, reward, nstate, done = self.env.step_window(action)
-            rewards.append(reward)
+            print("State: \n " + str(state))
+            print("Action: " + str(action))
+            print("Reward: " + str(reward))
+
+            rewards += reward
             state = nstate
             if done:
                 actions.append(action)
-                self.test_scores.append(rewards)
+                self.test_rewards.append(rewards)
                 self.test_actions.append(actions)
                 break
 
@@ -103,9 +106,9 @@ if __name__ == '__main__':
     env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
     env.statefunction = BatchLearning.SlideWindowStateFuc
     env.rewardfunction = BatchLearning.SlideWindowRewardFuc
-    env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
+    # env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
 
-    dqn = DDQNWAgent(env.action_space_n, 0.01, 0.9, 1, 0, 0.9)
+    dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
     dqn.memory.init_memory(env)
     simulation = Simulator(11, dqn, env, 5)
     simulation.run()

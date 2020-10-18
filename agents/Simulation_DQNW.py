@@ -1,3 +1,5 @@
+import os
+
 import tensorflow as tf
 from agents.DQNWAgent import DDQNWAgent
 from environment import BatchLearning
@@ -103,12 +105,16 @@ if __name__ == '__main__':
     # Create the agent
     config = ConfigTimeSeries(seperator=",", window=BatchLearning.SLIDE_WINDOW_SIZE)
     # Test on complete Timeseries from SwAT
-    env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
-    env.statefunction = BatchLearning.SlideWindowStateFuc
-    env.rewardfunction = BatchLearning.SlideWindowRewardFuc
-    # env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
+    for subdir, dirs, files in os.walk("../ts_data/A1Benchmark"):
+        for file in files:
+            if file.find('.csv') != -1:
+                env = TimeSeriesEnvironment(verbose=True, filename="./A1Benchmark/{}".format(file), config=config,
+                                            window=True)
+                env.statefunction = BatchLearning.SlideWindowStateFuc
+                env.rewardfunction = BatchLearning.SlideWindowRewardFuc
+                env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
 
-    dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
-    dqn.memory.init_memory(env)
-    simulation = Simulator(11, dqn, env, 5)
-    simulation.run()
+                dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
+                dqn.memory.init_memory(env)
+                simulation = Simulator(11, dqn, env, 5)
+                simulation.run()

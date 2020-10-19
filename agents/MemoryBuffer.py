@@ -53,9 +53,9 @@ class MemoryBuffer:
 
 
 class PrioritizedMemoryBuffer(MemoryBuffer):
-    def __init__(self):
+    def __init__(self, max):
         # Initialize Buffer for PER
-        pass
+        super().__init__(max)
 
     def store(self, state, action, reward, nstate, done):
         # Basically store as in root class
@@ -76,4 +76,5 @@ class PrioritizedMemoryBuffer(MemoryBuffer):
         pass
 
     def update_priority(self):
-       
+        # update priority of sample
+        pass

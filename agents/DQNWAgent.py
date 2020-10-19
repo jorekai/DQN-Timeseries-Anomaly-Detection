@@ -3,15 +3,11 @@ import random
 
 # custom modules
 from agents.MemoryBuffer import MemoryBuffer
-from agents.NeuralNetwork import build_model
+from agents.NeuralNetwork import build_model, build_lstm
 from environment import BatchLearning
 
 # Global Variables
-EPISODES = 21
-TRAIN_END = 0
-DISCOUNT_RATE = 0.5
-LEARNING_RATE = 0.001
-BATCH_SIZE = 256
+BATCH_SIZE = 512
 
 
 class DDQNWAgent:
@@ -25,6 +21,8 @@ class DDQNWAgent:
         self.epsilon = epsilon
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
+        # fitting param
+        self.epoch_count = 2
         self.model = build_model()
         self.model_target = build_model()  # Second (target) neural network
         self.update_target_from_model()  # Update weights
@@ -43,19 +41,14 @@ class DDQNWAgent:
         return np.argmax(action_vals)
 
     def experience_replay(self, batch_size, lstm):
-        # get the batches as list so we can build tuples
+        # get a sample from the memory buffer
         minibatch = self.memory.get_exp(batch_size)
-        # Execute the experience replay
 
-        # Convert to numpy for speed by vectorization
+        # create default input arrays for the fitting of the model
         x = []
         y = []
-        st = np.array(list(list(zip(*minibatch))[0]))
-        nst = np.array(list(list(zip(*minibatch))[3]))
 
-        st_predict = self.model.predict(st)  # Here is the speedup! I can predict on the ENTIRE batch
-        nst_predict = self.model.predict(nst)
-        nst_predict_target = self.model_target.predict(nst)  # Predict from the TARGET
+        st_predict, nst_predict, nst_predict_target = self.predict_on_batch(minibatch)
 
         index = 0
         for state, action, reward, nstate, done in minibatch:
@@ -63,7 +56,7 @@ class DDQNWAgent:
             # Predict from state
             nst_action_predict_target = nst_predict_target[index]
             nst_action_predict_model = nst_predict[index]
-            if done == True:  # Terminal: Just assign reward much like {* (not done) - QB[state][action]}
+            if done == True:  # Terminal: Just assign reward
                 target = reward
             else:  # Non terminal
                 target = reward + self.gamma * nst_action_predict_target[
@@ -75,8 +68,19 @@ class DDQNWAgent:
         # Reshape for Keras Fit
         x_reshape = np.array(x)
         y_reshape = np.array(y)
-        epoch_count = 2
-        self.hist = self.model.fit(x_reshape, y_reshape, epochs=epoch_count, verbose=0)
+        self.hist = self.model.fit(x_reshape, y_reshape, epochs=self.epoch_count, verbose=0)
+
+    def predict_on_batch(self, batch):
+        # Convert to numpy for speed by vectorization
+        st = np.array(list(list(zip(*batch))[0]))
+        nst = np.array(list(list(zip(*batch))[3]))
+
+        # predict on the batches with the model as well as the target values
+        st_predict = self.model.predict(st)
+        nst_predict = self.model.predict(nst)
+        nst_predict_target = self.model_target.predict(nst)
+
+        return st_predict, nst_predict, nst_predict_target
 
     def update_target_from_model(self):
         # Update the target model from the base model

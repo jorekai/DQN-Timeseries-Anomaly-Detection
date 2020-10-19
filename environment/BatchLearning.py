@@ -8,7 +8,7 @@ if "../" not in sys.path:
     sys.path.append("../../")
 from environment.TimeSeriesModel import TimeSeriesEnvironment
 
-SLIDE_WINDOW_SIZE = 2  # size of the slide window for SLIDE_WINDOW state and reward functions
+SLIDE_WINDOW_SIZE = 20  # size of the slide window for SLIDE_WINDOW state and reward functions
 
 
 def SlideWindowStateFuc(timeseries, timeseries_cursor, timeseries_states=None, action=None):
@@ -21,19 +21,19 @@ def SlideWindowStateFuc(timeseries, timeseries_cursor, timeseries_states=None, a
 
 def SlideWindowRewardFuc(timeseries, timeseries_cursor, action):
     if timeseries_cursor >= SLIDE_WINDOW_SIZE:
-        if np.sum(timeseries['anomaly']
-                  [timeseries_cursor - SLIDE_WINDOW_SIZE + 1:timeseries_cursor + 1]) == 0:
+        sum_anomaly = np.sum(timeseries['anomaly']
+                             [timeseries_cursor - SLIDE_WINDOW_SIZE + 1:timeseries_cursor + 1])
+        if sum_anomaly == 0:
             if action == 0:
                 return 1  # 0.1      # true negative
             else:
                 return -1  # 0.5     # false positive, error alarm
 
-        if np.sum(timeseries['anomaly']
-                  [timeseries_cursor - SLIDE_WINDOW_SIZE + 1:timeseries_cursor + 1]) > 0:
+        if sum_anomaly > 0:
             if action == 0:
-                return -5  # false negative, miss alarm
+                return -10  # false negative, miss alarm
             else:
-                return 5  # 10      # true positive
+                return 10  # 10      # true positive
     else:
         return 0
 

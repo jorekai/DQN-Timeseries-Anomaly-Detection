@@ -20,7 +20,8 @@ def build_lstm():
     lstm_autoencoder = keras.Sequential()
     # Encoder
     lstm_autoencoder.add(
-        keras.layers.LSTM(32, activation='relu', input_dim=20, return_sequences=True))
+        keras.layers.LSTM(32, activation='relu', input_shape=(None, BatchLearning.SLIDE_WINDOW_SIZE),
+                          return_sequences=True))
     lstm_autoencoder.add(keras.layers.LSTM(16, activation='relu', return_sequences=False))
     lstm_autoencoder.add(keras.layers.RepeatVector(256))
     # Decoder

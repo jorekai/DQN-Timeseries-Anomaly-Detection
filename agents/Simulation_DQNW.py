@@ -85,11 +85,11 @@ class Simulator:
                 self.env.timeseries_labeled)):
             action = self.agent.action(state)
             actions.append(action)
-            print("At Timestamp: " + str(idx))
+            # print("At Timestamp: " + str(idx))
             state, action, reward, nstate, done = self.env.step_window(action)
-            print("State: \n " + str(state))
-            print("Action: " + str(action))
-            print("Reward: " + str(reward))
+            # print("State: \n " + str(state))
+            # print("Action: " + str(action))
+            # print("Reward: " + str(reward))
 
             rewards += reward
             state = nstate
@@ -105,16 +105,27 @@ if __name__ == '__main__':
     # Create the agent
     config = ConfigTimeSeries(seperator=",", window=BatchLearning.SLIDE_WINDOW_SIZE)
     # Test on complete Timeseries from SwAT
-    for subdir, dirs, files in os.walk("../ts_data/A1Benchmark"):
-        for file in files:
-            if file.find('.csv') != -1:
-                env = TimeSeriesEnvironment(verbose=True, filename="./A1Benchmark/{}".format(file), config=config,
-                                            window=True)
-                env.statefunction = BatchLearning.SlideWindowStateFuc
-                env.rewardfunction = BatchLearning.SlideWindowRewardFuc
-                env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
+    # for subdir, dirs, files in os.walk("../ts_data/A1Benchmark"):
+    #     for file in files:
+    #         if file.find('.csv') != -1:
+    #             env = TimeSeriesEnvironment(verbose=True, filename="./A1Benchmark/{}".format(file), config=config,
+    #                                         window=True)
+    #             env.statefunction = BatchLearning.SlideWindowStateFuc
+    #             env.rewardfunction = BatchLearning.SlideWindowRewardFuc
+    #             env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
+    #
+    #             dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
+    #             dqn.memory.init_memory(env)
+    #             simulation = Simulator(11, dqn, env, 5)
+    #             simulation.run()
 
-                dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
-                dqn.memory.init_memory(env)
-                simulation = Simulator(11, dqn, env, 5)
-                simulation.run()
+    env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
+
+    env.statefunction = BatchLearning.SlideWindowStateFuc
+    env.rewardfunction = BatchLearning.SlideWindowRewardFuc
+    env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
+
+    dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
+    dqn.memory.init_memory(env)
+    simulation = Simulator(11, dqn, env, 5)
+    simulation.run()

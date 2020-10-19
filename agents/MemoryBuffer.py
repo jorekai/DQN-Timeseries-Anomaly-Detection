@@ -50,3 +50,30 @@ class MemoryBuffer:
 
     def __len__(self):
         return len(self.memory)
+
+
+class PrioritizedMemoryBuffer(MemoryBuffer):
+    def __init__(self):
+        # Initialize Buffer for PER
+        pass
+
+    def store(self, state, action, reward, nstate, done):
+        # Basically store as in root class
+        # Add the error for the sample by taking them of the Q Estimator, like below
+        # self.qnetwork_local.sample_noise()
+        # Q_expected = self.qnetwork_local(states).gather(1, actions)
+        # max_next_actions = self.get_max_next_actions(next_states)
+        # self.qnetwork_target.sample_noise()
+        # max_next_q_values = self.qnetwork_target(next_states).gather(1, max_next_actions)
+        # Q_targets = rewards + (self.GAMMA * max_next_q_values * (1 - dones))
+        # 
+        # errors = Q_expected - Q_targets
+        # store the tuple (state, action, reward, nstate, done, errors) in memory
+        pass
+
+    def get_exp(self, batch_size):
+        # return sample with highest priority yet in tree
+        pass
+
+    def update_priority(self):
+       

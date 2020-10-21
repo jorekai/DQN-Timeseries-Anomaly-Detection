@@ -25,19 +25,25 @@ class MemoryBuffer:
             self.memory = load_object("memory.obj")
         # try to init memory by taking random steps in our environment until the deque is full
         else:
+            index = 0
             while True:
                 # break if memory is full
                 if len(self.memory) >= self.memory.maxlen:
                     break
                 # check if we need to reset env and still fill our memory
                 if env.is_done(env.timeseries_cursor):
+                    index += 1
                     env.reset()
                 # get random action
-                action = random.randrange(env.action_space_n)
+                if index % 2 == 0:
+                    action = 0
+                else:
+                    action = 1
                 # take step in env and append
                 state, action, reward, nstate, done = env.step_window(action)
                 # store our memory in class
                 self.store(state, action, reward, nstate, done)
+                index += 1
             # store our memory locally to reduce loading time on next run
             store_object(self.memory, "memory.obj")
             print("Memory is full, {} Samples stored. It took {} seconds".format(len(self.memory),

@@ -92,11 +92,11 @@ class Simulator:
                 self.env.timeseries_labeled)):
             action = self.agent.action(state)
             actions.append(action)
-            # print("At Timestamp: " + str(idx))
+            print("At Timestamp: " + str(idx))
             state, action, reward, nstate, done = self.env.step_window(action)
-            # print("State: \n " + str(state))
-            # print("Action: " + str(action))
-            # print("Reward: " + str(reward))
+            print("State: \n " + str(state))
+            print("Action: " + str(action))
+            print("Reward: " + str(reward))
 
             rewards += reward
             state = nstate
@@ -135,4 +135,4 @@ if __name__ == '__main__':
     dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
     dqn.memory.init_memory(env)
     simulation = Simulator(11, dqn, env, 5)
-    simulation.run(save=False, load=False)
+    simulation.run(save=True, load=False)

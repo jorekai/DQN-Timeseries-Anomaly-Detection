@@ -34,10 +34,12 @@ class DDQNWAgent:
             return random.randrange(self.nA)  # Explore
         if self.epsilon == 0:
             action_vals = self.model_target.predict(np.array(state).reshape(1, 1,
-                                                                            BatchLearning.SLIDE_WINDOW_SIZE))
+                                                                            BatchLearning.SLIDE_WINDOW_SIZE),
+                                                    batch_size=1)
         else:
             action_vals = self.model.predict(np.array(state).reshape(1, 1,
-                                                                     BatchLearning.SLIDE_WINDOW_SIZE))  # Exploit: Use the NN to predict the correct action from this state
+                                                                     BatchLearning.SLIDE_WINDOW_SIZE),
+                                             batch_size=1)  # Exploit: Use the NN to predict the correct action from this state
         return np.argmax(action_vals)
 
     def experience_replay(self, batch_size, lstm):

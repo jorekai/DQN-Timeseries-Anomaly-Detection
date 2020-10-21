@@ -8,6 +8,8 @@ from environment.TimeSeriesModel import TimeSeriesEnvironment
 from resources import Utils as utils
 from resources.Plots import plot_actions
 
+CP_PATH = "../checkpoints/"
+
 
 class Simulator:
     """
@@ -26,7 +28,7 @@ class Simulator:
         self.test_rewards = []
         self.test_actions = []
 
-    def run(self):
+    def run(self, save, load):
         """
         This method is for scheduling training before testing
         :return: True if finished
@@ -34,15 +36,20 @@ class Simulator:
         while True:
             start = utils.start_timer()
             start_testing = self.can_test()
-            if not start_testing:
+            if not start_testing and not load:
                 info = self.training_iteration()
                 print("Training episode {} took {} seconds {}".format(self.episode, utils.get_duration(start), info))
                 self.next()
             if start_testing:
+                if save:
+                    self.agent.model_target.save("test_model.h5")
+                if load:
+                    self.agent.model_target = tf.keras.models.load_model("test_model.h5")
                 self.testing_iteration()
                 print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
             self.agent.anneal_eps()
+        print(self.test_actions)
         plot_actions(self.test_actions[0], self.env.timeseries_labeled)
         return True
 
@@ -128,4 +135,4 @@ if __name__ == '__main__':
     dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
     dqn.memory.init_memory(env)
     simulation = Simulator(11, dqn, env, 5)
-    simulation.run()
+    simulation.run(save=False, load=False)

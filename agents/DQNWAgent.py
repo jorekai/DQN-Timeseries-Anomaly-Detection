@@ -35,6 +35,8 @@ class DDQNWAgent:
         if self.epsilon == 0:
             action_vals = self.model_target.predict(np.array(state).reshape(1,
                                                                             BatchLearning.SLIDE_WINDOW_SIZE))
+            print("Pred 0\n{}".format(action_vals[0][0]))
+            print("Pred 1\n{}".format(action_vals[0][1]))
         else:
             action_vals = self.model.predict(np.array(state).reshape(1,
                                                                      BatchLearning.SLIDE_WINDOW_SIZE))  # Exploit: Use the NN to predict the correct action from this state

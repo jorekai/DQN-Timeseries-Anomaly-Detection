@@ -133,7 +133,7 @@ class TimeSeriesEnvironment:
             next_state = self.statefunction(self.timeseries_labeled, self.timeseries_cursor)
 
         return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
-
+    
     def step_boosted(self, action):
         # assert(action in action_space)
         # assert(self.timeseries_cursor >= 0)

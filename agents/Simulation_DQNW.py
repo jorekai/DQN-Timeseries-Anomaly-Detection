@@ -70,6 +70,7 @@ class Simulator:
             # Experience Replay
             if len(self.agent.memory) > self.agent.batch_size:
                 self.agent.experience_replay(self.agent.batch_size, lstm=False)
+        self.agent.memory.memory = self.agent.memory.memory_copy
         # Target Model Update
         if self.episode % self.update_steps == 0:
             self.agent.update_target_from_model()
@@ -85,11 +86,12 @@ class Simulator:
                 self.env.timeseries_labeled)):
             action = self.agent.action(state)
             actions.append(action)
-            # print("At Timestamp: " + str(idx))
             state, action, reward, nstate, done = self.env.step_window(action)
-            # print("State: \n " + str(state))
-            # print("Action: " + str(action))
-            # print("Reward: " + str(reward))
+            if idx >= 800 and idx <= 1000:
+                print("At Timestamp: " + str(idx))
+                print("State:\t\t\t" + str(state))
+                print("Action:\t\t\t" + str(action))
+                print("Reward:\t\t\t" + str(reward))
 
             rewards += reward
             state = nstate

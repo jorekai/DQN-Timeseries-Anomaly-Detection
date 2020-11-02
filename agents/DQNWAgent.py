@@ -4,7 +4,7 @@ import random
 # custom modules
 from agents.MemoryBuffer import MemoryBuffer
 from agents.NeuralNetwork import build_model, build_lstm
-from environment import BatchLearning
+from environment import WindowStateFunctions
 
 # Global Variables
 BATCH_SIZE = 512
@@ -53,10 +53,10 @@ class DDQNWAgent:
             return random.randrange(self.nA)  # Explore Actions by percentage epsilon
         if self.epsilon == 0:  # greedy action choice for testing the agents performance in our environment
             action_vals = self.model_target.predict(np.array(state).reshape(1,
-                                                                            BatchLearning.SLIDE_WINDOW_SIZE))
+                                                                            WindowStateFunctions.SLIDE_WINDOW_SIZE))
         else:
             action_vals = self.model.predict(np.array(state).reshape(1,
-                                                                     BatchLearning.SLIDE_WINDOW_SIZE))
+                                                                     WindowStateFunctions.SLIDE_WINDOW_SIZE))
         return np.argmax(action_vals)
 
     def experience_replay(self, batch_size):
@@ -111,7 +111,7 @@ class DDQNWAgent:
 
         try:
             #  check for equivalence of array shapes
-            expected_shape = np.zeros((BATCH_SIZE, BatchLearning.SLIDE_WINDOW_SIZE)).shape
+            expected_shape = np.zeros((BATCH_SIZE, WindowStateFunctions.SLIDE_WINDOW_SIZE)).shape
             msg = "Shape mismatch for Experience Replay, shape expected: {}, shape received: {}".format(st.shape,
                                                                                                         expected_shape)
             assert st.shape == expected_shape, msg

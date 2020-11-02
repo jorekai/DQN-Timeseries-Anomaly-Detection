@@ -1,13 +1,17 @@
 import matplotlib.pyplot as plt
 import random as rnd
-
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
 import seaborn as sb
 from sklearn.preprocessing import MinMaxScaler
 
 
-class RandomAgent():
+class RandomAgent:
+    """
+    This agent follows a straight random policy, every action is chosen of a random equal-distribution of the action
+    space. This agent can be used as a small introduction
+    """
+
     def __init__(self, environment=TimeSeriesEnvironment()):
         self.env = environment
         self.rewardSum = 0

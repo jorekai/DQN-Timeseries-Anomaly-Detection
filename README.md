@@ -5,8 +5,9 @@ This Repository focuses on Anomaly Detection with Reinforcement Learning. Starti
 # Prerequesites
 
 1. create a conda environment from req.txt by running:
-  ```$ conda create --name <env> --file <this file>```
-  
+  ```$ conda create --name <env> --file <this file>``` or by installing the environment via yml file 
+  ```conda env create -f <environment-name>.yml```
+2. This might be different for Linux Distributions or MacOS. I still need to test on my Linux system 
 # Work in Progress
 
 1. (NOW) Refactor the Environment, so that we can use the Binary State Function. This is important to recognize the complete

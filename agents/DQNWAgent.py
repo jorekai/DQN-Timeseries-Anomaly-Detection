@@ -78,16 +78,17 @@ class DDQNWAgent:
         state_predict, nextstate_predict, nextstate_predict_target = self.predict_on_batch(minibatch)
 
         index = 0
-        for state, action, reward, nstate, done in minibatch:
+        # we must iterate through the batch and calculate all target values for the models q values
+        for state, action, reward, nextstate, done in minibatch:
             x.append(state)
             # Predict from state
-            nextstate_predict_target = nextstate_predict_target[index]
+            nextstate_action_predict_target = nextstate_predict_target[index]
             nextstate_action_predict_model = nextstate_predict[index]
             # now we calculate the target Q-Values for our input batch of transitions
             if done:  # Terminal State: Just assign reward
                 target = reward
             else:  # Non terminal State: Update the Q-Values
-                target = reward + self.gamma * nextstate_action_predict_model[
+                target = reward + self.gamma * nextstate_action_predict_target[
                     np.argmax(nextstate_action_predict_model)]  # Using Q-Value from our Target Network follows DDQN
             target_f = state_predict[index]
             target_f[action] = target
@@ -107,6 +108,15 @@ class DDQNWAgent:
         # Convert to numpy for speed by vectorization
         st = np.array(list(list(zip(*batch))[0]))
         nst = np.array(list(list(zip(*batch))[3]))
+
+        try:
+            #  check for equivalence of array shapes
+            expected_shape = np.zeros((BATCH_SIZE, BatchLearning.SLIDE_WINDOW_SIZE)).shape
+            msg = "Shape mismatch for Experience Replay, shape expected: {}, shape received: {}".format(st.shape,
+                                                                                                        expected_shape)
+            assert st.shape == expected_shape, msg
+        except AssertionError:
+            raise
 
         # predict on the batches with the model as well as the target values
         st_predict = self.model.predict(st)

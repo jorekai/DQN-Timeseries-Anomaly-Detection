@@ -1,5 +1,4 @@
 import os
-
 import tensorflow as tf
 from agents.DQNWAgent import DDQNWAgent
 from environment import BatchLearning
@@ -15,6 +14,14 @@ class Simulator:
     """
 
     def __init__(self, max_episodes, agent, environment, update_steps):
+        """
+        Initialize the Simulator with parameters
+
+        :param max_episodes: How many episodes we want to learn, the last episode is used for evaluation
+        :param agent: the agent which should be trained
+        :param environment: the environment to evaluate and train in
+        :param update_steps: the update steps for the Target Q-Network of the Agent
+        """
         self.max_episodes = max_episodes
         self.episode = 1
         self.agent = agent
@@ -33,28 +40,26 @@ class Simulator:
         """
         while True:
             start = utils.start_timer()
-            start_testing = self.can_test()
+            start_testing = self.__can_test()
             if not start_testing:
-                info = self.training_iteration()
+                info = self.__training_iteration()
                 print("Training episode {} took {} seconds {}".format(self.episode, utils.get_duration(start), info))
-                self.next()
+                self.__next__()
             if start_testing:
-                self.testing_iteration()
+                self.__testing_iteration()
                 print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
             self.agent.anneal_eps()
         plot_actions(self.test_actions[0], self.env.timeseries_labeled)
         return True
 
-    def can_test(self):
-        if self.episode >= self.max_episodes:
-            return True
-        return False
+    def __training_iteration(self):
+        """
+        One training iteration is through the complete timeseries, maybe this needs to be changed for
+        bigger timeseries datasets.
 
-    def next(self):
-        self.episode += 1
-
-    def training_iteration(self):
+        :return: Information of the training episode, if update episode or normal episode
+        """
         rewards = 0
         state = self.env.reset()
         for idx in range(len(
@@ -69,15 +74,17 @@ class Simulator:
                 break
             # Experience Replay
             if len(self.agent.memory) > self.agent.batch_size:
-                self.agent.experience_replay(self.agent.batch_size, lstm=False)
-        self.agent.memory.memory = self.agent.memory.memory_copy
+                self.agent.experience_replay(self.agent.batch_size)
         # Target Model Update
         if self.episode % self.update_steps == 0:
             self.agent.update_target_from_model()
             return "Update Target Model"
         return ""
 
-    def testing_iteration(self):
+    def __testing_iteration(self):
+        """
+        The testing iteration with greedy actions only.
+        """
         rewards = 0
         actions = []
         state = self.env.reset()
@@ -87,12 +94,6 @@ class Simulator:
             action = self.agent.action(state)
             actions.append(action)
             state, action, reward, nstate, done = self.env.step_window(action)
-            if idx >= 800 and idx <= 1000:
-                print("At Timestamp: " + str(idx))
-                print("State:\t\t\t" + str(state))
-                print("Action:\t\t\t" + str(action))
-                print("Reward:\t\t\t" + str(reward))
-
             rewards += reward
             state = nstate
             if done:
@@ -100,6 +101,18 @@ class Simulator:
                 self.test_rewards.append(rewards)
                 self.test_actions.append(actions)
                 break
+
+    def __can_test(self):
+        """
+        :return: True if last episode, False before
+        """
+        if self.episode >= self.max_episodes:
+            return True
+        return False
+
+    def __next__(self):
+        # increment episode counter
+        self.episode += 1
 
 
 if __name__ == '__main__':
@@ -125,7 +138,7 @@ if __name__ == '__main__':
 
     env.statefunction = BatchLearning.SlideWindowStateFuc
     env.rewardfunction = BatchLearning.SlideWindowRewardFuc
-    env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
+    # env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
 
     dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
     dqn.memory.init_memory(env)

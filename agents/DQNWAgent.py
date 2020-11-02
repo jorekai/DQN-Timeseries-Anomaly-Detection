@@ -27,10 +27,10 @@ class DDQNWAgent:
         :param epsilon_decay: The hyperparameter for Q-Learning to choose the exploration decay per episode
         """
         self.nA = actions
-        self.memory = MemoryBuffer(max=50000)
         self.batch_size = BATCH_SIZE
         self.alpha = alpha
         self.gamma = gamma
+        self.memory = MemoryBuffer(max=50000, id="ddqnw")
         # Explore/Exploit
         self.epsilon = epsilon
         self.epsilon_min = epsilon_end

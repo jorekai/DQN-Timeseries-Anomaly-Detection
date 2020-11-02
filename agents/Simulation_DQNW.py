@@ -23,7 +23,7 @@ class Simulator:
         :param update_steps: the update steps for the Target Q-Network of the Agent
         """
         self.max_episodes = max_episodes
-        self.episode = 1
+        self.episode = 0
         self.agent = agent
         self.env = environment
         self.update_steps = update_steps
@@ -138,9 +138,8 @@ if __name__ == '__main__':
 
     env.statefunction = BatchLearning.SlideWindowStateFuc
     env.rewardfunction = BatchLearning.SlideWindowRewardFuc
-    # env.timeseries_cursor_init = BatchLearning.SLIDE_WINDOW_SIZE
 
-    dqn = DDQNWAgent(env.action_space_n, 0.001, 0.9, 1, 0, 0.9)
-    dqn.memory.init_memory(env)
-    simulation = Simulator(11, dqn, env, 5)
+    dqn = DDQNWAgent(env.action_space_n, alpha=0.001, gamma=0.9, epsilon=1, epsilon_end=0, epsilon_decay=0.9)
+    simulation = Simulator(10, dqn, env, 5)
+    dqn.memory.init_memory(env=env)
     simulation.run()

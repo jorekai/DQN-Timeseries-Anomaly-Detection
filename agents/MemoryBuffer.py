@@ -2,14 +2,13 @@ import os
 import random
 import time
 from collections import deque
-
-from environment import BatchLearning
 from resources.Utils import load_object, store_object
 
 
 class MemoryBuffer:
-    def __init__(self, max):
+    def __init__(self, max, id):
         self.memory = deque([], maxlen=max)
+        self.id = "memory_{}.obj".format(id)
 
     def store(self, state, action, reward, nstate, done):
         # Store the experience in memory
@@ -21,8 +20,8 @@ class MemoryBuffer:
         # resetting environment once
         env.reset()
         # try to load memory from local file
-        if os.path.isfile("memory.obj"):
-            self.memory = load_object("memory.obj")
+        if os.path.isfile(self.id):
+            self.memory = load_object(self.id)
         # try to init memory by taking random steps in our environment until the deque is full
         else:
             while True:
@@ -39,20 +38,23 @@ class MemoryBuffer:
                 # store our memory in class
                 self.store(state, action, reward, nstate, done)
             # store our memory locally to reduce loading time on next run
-            store_object(self.memory, "memory.obj")
+            store_object(self.memory, self.id)
             print("Memory is full, {} Samples stored. It took {} seconds".format(len(self.memory),
                                                                                  time.time() - init_time))
 
     def get_exp(self, batch_size):
         # Popping from the Memory Queue which should be filled randomly beforehand
         return [self.memory.popleft() for _i in range(batch_size)]
-        # return random.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)
 
 
 class PrioritizedMemoryBuffer(MemoryBuffer):
+    """
+    WIP
+    """
+
     def __init__(self, max):
         # Initialize Buffer for PER
         super().__init__(max)

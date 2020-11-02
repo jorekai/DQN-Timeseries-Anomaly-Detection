@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import random as rnd
-from environment.Config import ConfigTimeSeries
-from environment.TimeSeriesModel import TimeSeriesEnvironment
 import seaborn as sb
 from sklearn.preprocessing import MinMaxScaler
+# custom modules
+from environment.Config import ConfigTimeSeries
+from environment.TimeSeriesModel import TimeSeriesEnvironment
 
 
 class RandomAgent:

@@ -5,6 +5,11 @@ from resources.Utils import pretty_print_df
 
 
 class SampleFactory:
+    """
+    This Factory creates sample subsets of the input Timeseries. The format of the output is a standard supervised
+    learning split of (training_set, testing_set, validation_set)
+    """
+
     def __init__(self, timeseries, labelled):
         self.timeseries = timeseries
         self.labelled = labelled
@@ -32,7 +37,7 @@ class SampleFactory:
 
     def __get_sample_set(self, pct_test, labelled):
         """
-        Provides preprocessed Tuple of TimeSeries
+        Provides preprocessed Tuple of TimeSeries Frames
         :param pct_test: percentage of test size from complete dataframe
         :param labelled: True if labelled dataframe
         :return: Tuple (training, testing, validation) as pandas dataframe

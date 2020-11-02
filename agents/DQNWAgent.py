@@ -1,9 +1,8 @@
 import numpy as np
 import random
-
 # custom modules
 from agents.MemoryBuffer import MemoryBuffer
-from agents.NeuralNetwork import build_model, build_lstm
+from agents.NeuralNetwork import build_model
 from environment import WindowStateFunctions
 
 # Global Variables

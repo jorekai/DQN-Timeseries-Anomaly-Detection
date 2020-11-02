@@ -1,5 +1,4 @@
 from tensorflow import keras
-
 from environment import WindowStateFunctions
 
 
@@ -8,8 +7,8 @@ def build_model():
     model.add(
         keras.layers.Dense(WindowStateFunctions.SLIDE_WINDOW_SIZE + 1, input_dim=WindowStateFunctions.SLIDE_WINDOW_SIZE,
                            activation='relu'))  # [Input] -> Layer 1
-    model.add(keras.layers.Dense(128, activation='relu'))  # Layer 3 -> [output]
-    model.add(keras.layers.Dense(128, activation='relu'))  # Layer 3 -> [output]
+    model.add(keras.layers.Dense(WindowStateFunctions.SLIDE_WINDOW_SIZE * 4, activation='relu'))  # Layer 3 -> [output]
+    model.add(keras.layers.Dense(WindowStateFunctions.SLIDE_WINDOW_SIZE * 4, activation='relu'))  # Layer 3 -> [output]
     model.add(keras.layers.Dense(2, activation='linear'))  # Layer 3 -> [output]
     model.compile(loss='mse',  # Loss function: Mean Squared Error
                   optimizer=keras.optimizers.Adam(
@@ -18,6 +17,10 @@ def build_model():
 
 
 def build_lstm():
+    """
+    WIP
+    :return:
+    """
     lstm_autoencoder = keras.Sequential()
     # Encoder
     lstm_autoencoder.add(

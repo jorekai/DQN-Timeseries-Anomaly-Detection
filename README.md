@@ -26,6 +26,9 @@ complete datset.
 4. (FUTURE) Refine the n-step Q Learning and verify if it is correct
 
 # Documentation
+The overview can be seen in the component diagram below. The Simulator is the Training Component used to train and to evaluate(WIP) agents in their environment.
+The environment uses different state functions representing the internal state, also it needs to be instantiated with a Config. The data for the environment is found in the subfolder */ts_data*.
+![Overview Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/jorekai/DQN-Timeseries-Anomaly-Detection/master/uml/overview.puml)
 ## Agent
 The agent is using tensorflow keras nn models to predict on batches. The below UML diagram describes the current setup.
 ![Agent Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/jorekai/DQN-Timeseries-Anomaly-Detection/master/uml/agent.puml)

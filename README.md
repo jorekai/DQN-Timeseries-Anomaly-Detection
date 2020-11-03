@@ -25,3 +25,7 @@ complete datset.
 
 4. (FUTURE) Refine the n-step Q Learning and verify if it is correct
 
+# Documentation
+## Agent
+
+![Agent Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/jorekai/DQN-Timeseries-Anomaly-Detection/master/uml/agent.puml)

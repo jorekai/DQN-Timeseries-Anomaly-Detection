@@ -1,0 +1,29 @@
+@startuml
+
+[Simulator]
+[Simulator] .left.> [Agent] : needs
+[Simulator] .right.> [TimeSeriesEnvironment] : needs
+[TimeSeriesEnvironment] -down-> Data: uses
+[TimeSeriesEnvironment] -right-> StateFunctions : has
+[TimeSeriesEnvironment] -up-> Config : has
+
+node "Data" {
+node Files[
+    CSVs
+    |_ A1 Benchmark
+    |_ A2 Benchmark
+    |_ A3 Benchmark
+    |_ A4 Benchmark
+    |_ numenta
+    |_ test
+]
+}
+
+skinparam node {
+borderColor Green
+backgroundColor Yellow
+backgroundColor<<shared node>> Magenta
+}
+
+
+@enduml

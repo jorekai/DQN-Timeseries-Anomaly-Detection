@@ -1,0 +1,66 @@
+@startuml
+'Relations in Diagram
+AbstractAgent *-- NeuralNetwork
+AbstractAgent <|-- SlidingWindowAgent
+AbstractAgent <|-- BinaryStateAgent
+AbstractAgent *-- MemoryBuffer
+
+
+'Classes in Diagram
+abstract class AbstractAgent{
++epsilon_decay: float
++epsilon_end: float
++epsilon: float
++gamma: float
++alpha: float
++dqn: keras.Model
++target_dqn: keras.Model
++fit_epoch:int
++action_space: int
++batch_size: int
++hist: keras.History
++memory: MemoryBuffer
++loss: List
+'
++ anneal_epsilon(): void
++ update_target_model()
+{abstract} action(state)
+{abstract} experience_replay()
+{abstract} predict_on_batch(batch)
+}
+
+class SlidingWindowAgent {
++action(state): int
++experience_replay(): void
++predict_on_batch(batch): Tuple(List, List, List)
+}
+
+class BinaryStateAgent {
+..=Work in Progress..
++action(state): int
++experience_replay(): void
++predict_on_batch(batch): Tuple(List, List, List)
+}
+
+class NeuralNetwork{
++input_dim: int
++input_neurons: int
++hidden_neurons: int
++optimizer_lr: float
++output_dim: int
++keras_model: keras.Model
+'
++ build_model(): keras.Model
+}
+
+class MemoryBuffer{
++memory: deque
++id: String
+'
++store(state, action, reward, next_state, done): void
++init_memory(environment):void
++get_exp(batch_size): List
+-len(): int
+}
+
+@enduml

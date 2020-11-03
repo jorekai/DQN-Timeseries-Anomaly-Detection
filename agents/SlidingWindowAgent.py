@@ -3,6 +3,7 @@ import random as pyrand
 from agents.AbstractAgent import AbstractAgent
 
 from environment import WindowStateFunctions
+from resources.SafetyChecks import verifyBatchShape
 
 
 class SlidingWindowAgent(AbstractAgent):
@@ -83,14 +84,8 @@ class SlidingWindowAgent(AbstractAgent):
         st = np.array(list(list(zip(*batch))[0]))
         nst = np.array(list(list(zip(*batch))[3]))
 
-        try:
-            #  check for equivalence of array shapes
-            expected_shape = np.zeros((self.batch_size, WindowStateFunctions.SLIDE_WINDOW_SIZE)).shape
-            msg = "Shape mismatch for Experience Replay, shape expected: {}, shape received: {}".format(st.shape,
-                                                                                                        expected_shape)
-            assert st.shape == expected_shape, msg
-        except AssertionError:
-            raise
+        # safety check
+        verifyBatchShape(st, np.zeros((self.batch_size, WindowStateFunctions.SLIDE_WINDOW_SIZE)).shape)
 
         # predict on the batches with the model as well as the target values
         st_predict = self.dqn.predict(st)

@@ -1,9 +1,8 @@
 import os
 import tensorflow as tf
 # custom modules
-from agents.DQNWAgent import DDQNWAgent
 from agents.MemoryBuffer import MemoryBuffer
-from agents.NeuralNetwork import build_model
+from agents.NeuralNetwork import NeuralNetwork
 from agents.SlidingWindowAgent import SlidingWindowAgent
 from environment import WindowStateFunctions
 from environment.Config import ConfigTimeSeries
@@ -17,7 +16,7 @@ class Simulator:
     This class is used to train and to test the agent in its environment
     """
 
-    def __init__(self, max_episodes, agent, environment, update_steps):
+    def __init__(self, max_episodes, agent, environment, update_steps, stepfunction):
         """
         Initialize the Simulator with parameters
 
@@ -30,6 +29,7 @@ class Simulator:
         self.episode = 0
         self.agent = agent
         self.env = environment
+        self.stepfunction = stepfunction
         self.update_steps = update_steps
 
         # information variables
@@ -69,7 +69,7 @@ class Simulator:
         for idx in range(len(
                 self.env.timeseries_labeled)):
             action = self.agent.action(state)
-            state, action, reward, nstate, done = self.env.step_window(action)
+            state, action, reward, nstate, done = self.stepfunction(action)
             rewards += reward
             self.agent.memory.store(state, action, reward, nstate, done)
             state = nstate
@@ -139,13 +139,15 @@ if __name__ == '__main__':
     #             simulation.run()
 
     env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
-
     env.statefunction = WindowStateFunctions.SlideWindowStateFuc
     env.rewardfunction = WindowStateFunctions.SlideWindowRewardFuc
 
-    agent = SlidingWindowAgent(dqn=build_model(), memory=MemoryBuffer(max=50000, id="sliding_window"), alpha=0.001,
+    dqn = NeuralNetwork(input_dim=WindowStateFunctions.SLIDE_WINDOW_SIZE,
+                        input_neurons=WindowStateFunctions.SLIDE_WINDOW_SIZE + 1).keras_model
+
+    agent = SlidingWindowAgent(dqn=dqn, memory=MemoryBuffer(max=50000, id="sliding_window"), alpha=0.001,
                                gamma=0.99, epsilon=1.0,
                                epsilon_end=0.0, epsilon_decay=0.9, fit_epoch=2, action_space=2, batch_size=512)
-    simulation = Simulator(10, agent, env, 5)
+    simulation = Simulator(10, agent, env, 5, stepfunction=env.step_window)
     agent.memory.init_memory(env=env)
     simulation.run()

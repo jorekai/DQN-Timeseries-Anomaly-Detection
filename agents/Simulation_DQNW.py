@@ -2,6 +2,9 @@ import os
 import tensorflow as tf
 # custom modules
 from agents.DQNWAgent import DDQNWAgent
+from agents.MemoryBuffer import MemoryBuffer
+from agents.NeuralNetwork import build_model
+from agents.SlidingWindowAgent import SlidingWindowAgent
 from environment import WindowStateFunctions
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
@@ -50,7 +53,7 @@ class Simulator:
                 self.__testing_iteration()
                 print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
-            self.agent.anneal_eps()
+            self.agent.anneal_epsilon()
         plot_actions(self.test_actions[0], self.env.timeseries_labeled)
         return True
 
@@ -75,10 +78,10 @@ class Simulator:
                 break
             # Experience Replay
             if len(self.agent.memory) > self.agent.batch_size:
-                self.agent.experience_replay(self.agent.batch_size)
+                self.agent.experience_replay()
         # Target Model Update
         if self.episode % self.update_steps == 0:
-            self.agent.update_target_from_model()
+            self.agent.update_target_model()
             return "Update Target Model"
         return ""
 
@@ -140,7 +143,9 @@ if __name__ == '__main__':
     env.statefunction = WindowStateFunctions.SlideWindowStateFuc
     env.rewardfunction = WindowStateFunctions.SlideWindowRewardFuc
 
-    dqn = DDQNWAgent(env.action_space_n, alpha=0.001, gamma=0.9, epsilon=1, epsilon_end=0, epsilon_decay=0.9)
-    simulation = Simulator(10, dqn, env, 5)
-    dqn.memory.init_memory(env=env)
+    agent = SlidingWindowAgent(dqn=build_model(), memory=MemoryBuffer(max=50000, id="sliding_window"), alpha=0.001,
+                               gamma=0.99, epsilon=1.0,
+                               epsilon_end=0.0, epsilon_decay=0.9, fit_epoch=2, action_space=2, batch_size=512)
+    simulation = Simulator(10, agent, env, 5)
+    agent.memory.init_memory(env=env)
     simulation.run()

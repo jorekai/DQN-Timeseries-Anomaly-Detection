@@ -8,7 +8,9 @@ class AbstractAgent(ABC):
     choice of algorithm.
     """
 
-    def __init__(self, dqn, memory, alpha, gamma, epsilon, epsilon_end, epsilon_decay, fit_epoch):
+    @abstractmethod
+    def __init__(self, dqn, memory, alpha, gamma, epsilon,
+                 epsilon_end, epsilon_decay, fit_epoch, action_space, batch_size):
         """
         Initializing an agent which shall learn an optimal Q(s, a) value function.
         :param dqn: model -> keras.model
@@ -33,10 +35,14 @@ class AbstractAgent(ABC):
         # memory
         self.memory = memory
         # state
-        self.state = None
+        self.action_space = action_space
+        self.batch_size = batch_size
+        # evaluation training
+        self.hist = None
+        self.loss = []
 
     @abstractmethod
-    def action(self):
+    def action(self, state):
         """
         The action function chooses according to a certain policy actions in our environment
         :return: action ∈ (action_space)
@@ -66,10 +72,10 @@ class AbstractAgent(ABC):
         """
         Update the target model from the base model
         """
-        self.model_target.set_weights(self.model.get_weights())
+        self.target_dqn.set_weights(self.dqn.get_weights())
 
     def anneal_epsilon(self):
         """
         Anneal our epsilon factor by the decay factor
         """
-        self.epsilon = max(self.epsilon_min, self.epsilon_decay * self.epsilon)
+        self.epsilon = max(self.epsilon_end, self.epsilon_decay * self.epsilon)

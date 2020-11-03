@@ -27,5 +27,5 @@ complete datset.
 
 # Documentation
 ## Agent
-
+The agent is using tensorflow keras nn models to predict on batches. The below UML diagram describes the current setup.
 ![Agent Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/jorekai/DQN-Timeseries-Anomaly-Detection/master/uml/agent.puml)

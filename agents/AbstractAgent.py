@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import copy
 import tensorflow as tf
 
 
@@ -30,7 +31,7 @@ class AbstractAgent(ABC):
         self.alpha = alpha
         # network
         self.dqn = dqn
-        self.target_dqn = tf.keras.models.clone_model(dqn)
+        self.target_dqn = copy(dqn)
         self.fit_epoch = fit_epoch
         # memory
         self.memory = memory

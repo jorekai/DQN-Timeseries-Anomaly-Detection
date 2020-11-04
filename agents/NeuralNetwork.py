@@ -6,7 +6,7 @@ class NeuralNetwork:
                  input_neurons, optimizer_lr=0.001, output_dim=2):
         self.input_dim = input_dim
         self.input_neurons = input_neurons
-        self.hidden_neurons = 4 * input_neurons
+        self.hidden_neurons = 24
         self.optimizer_lr = optimizer_lr
         self.output_dim = output_dim
         self.keras_model = self.build_model()
@@ -14,16 +14,17 @@ class NeuralNetwork:
     def build_model(self):
         model = keras.Sequential()  # https://keras.io/models/sequential/
         model.add(
-            keras.layers.Dense(self.input_dim + 1, input_dim=self.input_dim,
+            keras.layers.Dense(self.hidden_neurons, input_dim=self.input_dim,
                                activation='relu'))  # [Input] -> Layer 1
         model.add(
-            keras.layers.Dense(self.input_dim * 4, activation='relu'))  # Layer 2 -> [hidden1]
+            keras.layers.Dense(self.hidden_neurons, activation='relu'))  # Layer 2 -> [hidden1]
         model.add(
-            keras.layers.Dense(self.input_dim * 4, activation='relu'))  # Layer 3 -> [hidden2]
+            keras.layers.Dense(self.hidden_neurons, activation='relu'))  # Layer 3 -> [hidden2]
         model.add(keras.layers.Dense(self.output_dim, activation='linear'))  # Layer 4 -> [out]
         model.compile(loss='mse',  # Loss function: Mean Squared Error
                       optimizer=keras.optimizers.Adam(
                           lr=self.optimizer_lr))  # Optimizer: Adam (Feel free to check other options)
+        print(model.summary())
         return model
 
 

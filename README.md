@@ -31,6 +31,12 @@ The environment uses different state functions representing the internal state, 
 
 ---
 ![Overview Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/jorekai/DQN-Timeseries-Anomaly-Detection/master/uml/overview.puml)
+
+## Environment
+The Base Environment is a wrapable Object which must be contained by certain Custom Environments. The below UML diagram shows the necessary stuff.
+
+![Environment Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/jorekai/DQN-Timeseries-Anomaly-Detection/master/uml/environment.puml)
+
 ## Agent
 The agent is using tensorflow keras nn models to predict on batches. The below UML diagram describes the current setup.
 

@@ -36,7 +36,6 @@ class SlidingWindowAgent {
 }
 
 class BinaryStateAgent {
-..=Work in Progress..
 +action(state): int
 +experience_replay(): void
 +predict_on_batch(batch): Tuple(List, List, List)

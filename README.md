@@ -1,7 +1,7 @@
 # DQN-Timeseries-Anomaly-Detection
 
 This Repository focuses on Anomaly Detection with Reinforcement Learning. Starting with basic DQN Agents exploring Timeseries, modelled as an environment.
-The idea is taken from https://github.com/chengqianghuang/exp-anomaly-detector but I went with Tensorflow 2 as backend. 
+The idea is taken from https://github.com/chengqianghuang/exp-anomaly-detector but I went with Tensorflow 2 as backend. The intermediate Goal is to run some Benchmarks on the most common Anomaly Detection Benchmark Datasets. In Future I might be able to support bi-/multivariate Timeseries. The Problem while working with univariate Timeseries is the small state space and strongly dependence on domain space of the Timeseries.
 
 # Prerequesites
 

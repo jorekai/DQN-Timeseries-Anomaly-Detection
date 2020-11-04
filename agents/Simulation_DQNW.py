@@ -4,7 +4,6 @@ import tensorflow as tf
 from agents.MemoryBuffer import MemoryBuffer
 from agents.NeuralNetwork import NeuralNetwork
 from agents.SlidingWindowAgent import SlidingWindowAgent
-from environment import WindowStateFunctions
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
 from environment.WindowStateEnvironment import WindowStateEnvironment

@@ -2,7 +2,6 @@ import numpy as np
 import random as pyrand
 from agents.AbstractAgent import AbstractAgent
 
-from environment import WindowStateFunctions
 from resources.SafetyChecks import verifyBatchShape
 
 
@@ -12,8 +11,9 @@ class SlidingWindowAgent(AbstractAgent):
     One can use all superclass hooks for training the agent.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, window_size=25, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.window_size = window_size
 
     def action(self, state):
         """
@@ -26,11 +26,10 @@ class SlidingWindowAgent(AbstractAgent):
             return pyrand.randrange(self.action_space)
         elif self.epsilon == 0:
             # exploit from target net (evaluation)
-            action_values = self.target_dqn.predict(np.array(state).reshape(1,
-                                                                            WindowStateFunctions.SLIDE_WINDOW_SIZE))
+            action_values = self.target_dqn.predict(np.array(state).reshape(1, self.window_size))
         else:
             # exploit from train net (training)
-            action_values = self.dqn.predict(np.array(state).reshape(1, WindowStateFunctions.SLIDE_WINDOW_SIZE))
+            action_values = self.dqn.predict(np.array(state).reshape(1, self.window_size))
         # return index of max action in action list
         return np.argmax(action_values)
 
@@ -85,7 +84,7 @@ class SlidingWindowAgent(AbstractAgent):
         nst = np.array(list(list(zip(*batch))[3]))
 
         # safety check
-        verifyBatchShape(st, np.zeros((self.batch_size, WindowStateFunctions.SLIDE_WINDOW_SIZE)).shape)
+        verifyBatchShape(st, np.zeros((self.batch_size, self.window_size)).shape)
 
         # predict on the batches with the model as well as the target values
         st_predict = self.dqn.predict(st)

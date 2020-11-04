@@ -11,6 +11,10 @@ class BinaryStateEnvironment:
     """
 
     def __init__(self, environment: TimeSeriesEnvironment):
+        """
+        Initializing the BinaryStateEnv by wrapping the BaseEnvironment
+        :param environment: TimeSeriesEnvironment
+        """
         self.env = environment
 
     def __state(self, action):
@@ -75,9 +79,18 @@ class BinaryStateEnvironment:
         return current_state, action, reward, next_state, self.env.is_done(self.env.timeseries_cursor)
 
     def __len__(self):
+        """
+        Length of the current Timeseries
+        :return: int
+        """
         return len(self.env)
 
     def __getattr__(self, item):
+        """
+        Get the attribute of the base environment
+        :param item: String of field key
+        :return: attribute item of the base environment
+        """
         return getattr(self.env, item)
 
 

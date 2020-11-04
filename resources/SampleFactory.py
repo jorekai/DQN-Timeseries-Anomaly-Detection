@@ -1,6 +1,6 @@
 import random
 from environment.Config import ConfigTimeSeries
-from environment.TimeSeriesModel import TimeSeriesEnvironment
+from environment.BaseEnvironment import TimeSeriesEnvironment
 from resources.Utils import pretty_print_df
 
 

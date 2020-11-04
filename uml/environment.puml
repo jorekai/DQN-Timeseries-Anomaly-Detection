@@ -1,0 +1,49 @@
+@startuml
+
+class Simulator
+
+class TimeSeriesEnv{
++ state(): pass
++ reward(): pass
++ reset(): pass
++ step(): pass
+..
+etc...
+}
+
+class BinaryStateEnv{
++ env: TimeSeriesEnv
++ state(): list
++ reward(): int
++ reset(): void
++ step(): S,A,R,S_,D
+..
+etc...
+}
+
+class WindowStateEnv{
++ env: TimeSeriesEnv
++ state(): list
++ reward(): int
++ reset(): void
++ step(): S,A,R,S_,D
+..
+etc...
+}
+
+class GenericEnv{
++ env: TimeSeriesEnv
+==
+implement the methods and\nwrap the Base Environment
+}
+
+Simulator . TimeSeriesEnv :needs
+BinaryStateEnv *.up. TimeSeriesEnv :wraps
+WindowStateEnv *.up. TimeSeriesEnv :wraps
+GenericEnv *.up. TimeSeriesEnv :wraps
+
+
+note "state returns a generic state \nreward returns a generic reward\nreset should set the timeseries cursor back\nstep returns the Markov Tuple" as N1
+TimeSeriesEnv .right. N1
+
+@enduml

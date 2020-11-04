@@ -7,7 +7,7 @@ from agents.NeuralNetwork import NeuralNetwork
 from agents.SlidingWindowAgent import SlidingWindowAgent
 from environment.BinaryStateEnvironment import BinaryStateEnvironment
 from environment.Config import ConfigTimeSeries
-from environment.TimeSeriesModel import TimeSeriesEnvironment
+from environment.BaseEnvironment import TimeSeriesEnvironment
 from environment.WindowStateEnvironment import WindowStateEnvironment
 from resources import Utils as utils
 from resources.Plots import plot_actions

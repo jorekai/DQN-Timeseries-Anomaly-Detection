@@ -1,7 +1,7 @@
 import numpy as np
 
 from environment.Config import ConfigTimeSeries
-from environment.TimeSeriesModel import TimeSeriesEnvironment
+from environment.BaseEnvironment import TimeSeriesEnvironment
 
 
 class BinaryStateEnvironment:

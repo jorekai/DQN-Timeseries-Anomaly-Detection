@@ -1,9 +1,9 @@
 @startuml
 'Relations in Diagram
-AbstractAgent *-- NeuralNetwork
+AbstractAgent *-left- NeuralNetwork
 AbstractAgent <|-- SlidingWindowAgent
 AbstractAgent <|-- BinaryStateAgent
-AbstractAgent *-- MemoryBuffer
+AbstractAgent *-right- MemoryBuffer
 
 
 'Classes in Diagram

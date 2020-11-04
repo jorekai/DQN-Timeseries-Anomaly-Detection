@@ -107,15 +107,6 @@ class TimeSeriesEnvironment:
         return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
 
     # take a step and gain a reward
-    def step_qtable(self, action):
-        current_state = self.statefunction(timeseries_cursor=self.timeseries_cursor, qtableagent=True)
-        action_in = action
-        reward = self.rewardfunction(timeseries_cursor=self.timeseries_cursor, action=action_in)
-        self.update_cursor()
-        next_state = self.statefunction(timeseries_cursor=self.timeseries_cursor, qtableagent=True)
-        return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
-
-    # take a step and gain a reward
     def step_window(self, action):
 
         current_state = self.statefunction(self.timeseries_labeled, self.timeseries_cursor)
@@ -131,31 +122,6 @@ class TimeSeriesEnvironment:
         else:
             self.isdone = 0
             next_state = self.statefunction(self.timeseries_labeled, self.timeseries_cursor)
-
-        return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
-    
-    def step_boosted(self, action):
-        # assert(action in action_space)
-        # assert(self.timeseries_cursor >= 0)
-        current_state = self._get_state_q(self.timeseries_cursor)
-
-        # 1. get the reward of the action
-        reward = self.rewardfunction(self.timeseries_labeled, timeseries_cursor=self.timeseries_cursor, action=action)
-
-        # 2. get the next state and the done flag after the action
-        self.timeseries_cursor += 1
-
-        if self.timeseries_cursor >= self.timeseries_labeled['value'].size:
-            done = 1
-            next_state = np.array([self.timeseries_states, self.timeseries_states])
-        else:
-            done = 0
-            next_state = self.statefunction(self.timeseries_labeled, self.timeseries_cursor)
-
-        if len(np.shape(next_state)) > len(np.shape(self.timeseries_states)):
-            self.timeseries_states = next_state[action]
-        else:
-            self.timeseries_states = next_state
 
         return current_state, action, reward, next_state, self.is_done(self.timeseries_cursor)
 
@@ -186,6 +152,9 @@ class TimeSeriesEnvironment:
 
     def get_name(self):
         return self.filename
+
+    def __len__(self):
+        return self.timeseries_labeled['value'].size
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ def defaultState(timeseries, cursor, action):
     return state
 
 
-def defaultReward(state, timeseries, cursor, action, path=None):
+def defaultReward(state, timeseries, cursor, action):
     if state[1] == 1 and timeseries['anomaly'][cursor] == 1:
         if action == 1:
             return 1

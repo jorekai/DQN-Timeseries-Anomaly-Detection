@@ -7,6 +7,7 @@ from agents.SlidingWindowAgent import SlidingWindowAgent
 from environment import WindowStateFunctions
 from environment.Config import ConfigTimeSeries
 from environment.TimeSeriesModel import TimeSeriesEnvironment
+from environment.WindowStateEnvironment import WindowStateEnvironment
 from resources import Utils as utils
 from resources.Plots import plot_actions
 
@@ -16,7 +17,7 @@ class Simulator:
     This class is used to train and to test the agent in its environment
     """
 
-    def __init__(self, max_episodes, agent, environment, update_steps, stepfunction):
+    def __init__(self, max_episodes, agent, environment, update_steps):
         """
         Initialize the Simulator with parameters
 
@@ -29,7 +30,6 @@ class Simulator:
         self.episode = 0
         self.agent = agent
         self.env = environment
-        self.stepfunction = stepfunction
         self.update_steps = update_steps
 
         # information variables
@@ -54,7 +54,7 @@ class Simulator:
                 print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
             self.agent.anneal_epsilon()
-        plot_actions(self.test_actions[0], self.env.timeseries_labeled)
+        plot_actions(self.test_actions[0], getattr(self.env, "timeseries_labeled"))
         return True
 
     def __training_iteration(self):
@@ -67,9 +67,9 @@ class Simulator:
         rewards = 0
         state = self.env.reset()
         for idx in range(len(
-                self.env.timeseries_labeled)):
+                self.env)):
             action = self.agent.action(state)
-            state, action, reward, nstate, done = self.stepfunction(action)
+            state, action, reward, nstate, done = self.env.step(action)
             rewards += reward
             self.agent.memory.store(state, action, reward, nstate, done)
             state = nstate
@@ -94,10 +94,10 @@ class Simulator:
         state = self.env.reset()
         self.agent.epsilon = 0
         for idx in range(len(
-                self.env.timeseries_labeled)):
+                self.env)):
             action = self.agent.action(state)
             actions.append(action)
-            state, action, reward, nstate, done = self.env.step_window(action)
+            state, action, reward, nstate, done = self.env.step(action)
             rewards += reward
             state = nstate
             if done:
@@ -122,7 +122,6 @@ class Simulator:
 if __name__ == '__main__':
     tf.compat.v1.disable_eager_execution()
     # Create the agent
-    config = ConfigTimeSeries(seperator=",", window=WindowStateFunctions.SLIDE_WINDOW_SIZE)
     # Test on complete Timeseries from SwAT
     # for subdir, dirs, files in os.walk("../ts_data/A1Benchmark"):
     #     for file in files:
@@ -138,16 +137,16 @@ if __name__ == '__main__':
     #             simulation = Simulator(11, dqn, env, 5)
     #             simulation.run()
 
-    env = TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData_1.csv", config=config, window=True)
-    env.statefunction = WindowStateFunctions.SlideWindowStateFuc
-    env.rewardfunction = WindowStateFunctions.SlideWindowRewardFuc
+    config = ConfigTimeSeries(seperator=",", window=1)
+    env = WindowStateEnvironment(
+        TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData.csv", config=config, window=True))
 
-    dqn = NeuralNetwork(input_dim=WindowStateFunctions.SLIDE_WINDOW_SIZE,
-                        input_neurons=WindowStateFunctions.SLIDE_WINDOW_SIZE + 1).keras_model
+    dqn = NeuralNetwork(input_dim=env.window_size,
+                        input_neurons=env.window_size + 1).keras_model
 
     agent = SlidingWindowAgent(dqn=dqn, memory=MemoryBuffer(max=50000, id="sliding_window"), alpha=0.001,
                                gamma=0.99, epsilon=1.0,
                                epsilon_end=0.0, epsilon_decay=0.9, fit_epoch=2, action_space=2, batch_size=512)
-    simulation = Simulator(10, agent, env, 5, stepfunction=env.step_window)
+    simulation = Simulator(10, agent, env, 5)
     agent.memory.init_memory(env=env)
     simulation.run()

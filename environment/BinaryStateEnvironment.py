@@ -36,9 +36,9 @@ class BinaryStateEnvironment:
         label = self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor]
         if state[1] == 1 and label == 1:
             if action == 1:
-                return 1
+                return 5
             if action == 0:
-                return -1
+                return -5
         if state[1] == 1 and label == 0:
             if action == 1:
                 return -1
@@ -46,9 +46,9 @@ class BinaryStateEnvironment:
                 return 1
         if state[1] == 0 and label == 1:
             if action == 1:
-                return 1
+                return 5
             if action == 0:
-                return -1
+                return -5
         if state[1] == 0 and label == 0:
             if action == 1:
                 return -1

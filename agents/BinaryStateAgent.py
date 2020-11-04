@@ -6,7 +6,7 @@ from resources.SafetyChecks import verifyBatchShape
 
 class BinaryStateAgent(AbstractAgent):
     def __init__(self, *args, **kwargs):
-        super.__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def action(self, state):
         """
@@ -76,8 +76,8 @@ class BinaryStateAgent(AbstractAgent):
         verifyBatchShape(st, np.zeros((self.batch_size, 2)).shape)
 
         # predict on the batches with the model as well as the target values
-        st_predict = self.model.predict(st)
-        nst_predict = self.model.predict(nst)
-        nst_predict_target = self.model_target.predict(nst)
+        st_predict = self.dqn.predict(st)
+        nst_predict = self.dqn.predict(nst)
+        nst_predict_target = self.target_dqn.predict(nst)
 
         return st_predict, nst_predict, nst_predict_target

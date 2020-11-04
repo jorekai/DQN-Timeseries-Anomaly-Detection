@@ -34,7 +34,7 @@ class MemoryBuffer:
                 # get random action
                 action = random.randrange(env.action_space_n)
                 # take step in env and append
-                state, action, reward, nstate, done = env.step_window(action)
+                state, action, reward, nstate, done = env.step(action)
                 # store our memory in class
                 self.store(state, action, reward, nstate, done)
             # store our memory locally to reduce loading time on next run

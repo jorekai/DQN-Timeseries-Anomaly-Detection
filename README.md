@@ -25,6 +25,8 @@ complete datset.
 
 4. (FUTURE) Refine the n-step Q Learning and verify if it is correct
 
+5. (FUTURE) Include some testing for the environment and the agents
+
 # Documentation
 The overview can be seen in the component diagram below. The Simulator is the Training Component used to train and to evaluate(WIP) agents in their environment.
 The environment uses different state functions representing the internal state, also it needs to be instantiated with a Config. The data for the environment is found in the subfolder */ts_data*.

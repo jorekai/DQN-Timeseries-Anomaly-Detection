@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import os
 from sklearn.preprocessing import MinMaxScaler
 
@@ -93,9 +92,18 @@ class TimeSeriesEnvironment:
         pass
 
     def update_cursor(self):
+        """
+        Increment the cursor
+        :return: void
+        """
         self.timeseries_cursor += 1
 
     def is_done(self, cursor):
+        """
+        Are we done with the current timeseries?
+        :param cursor: position in dataframe
+        :return: boolean
+        """
         if cursor >= len(self.timeseries_labeled) - 1:
             self.done = True
             return True
@@ -104,23 +112,45 @@ class TimeSeriesEnvironment:
             return False
 
     def normalize_timeseries(self):
+        """
+        Min,Max Normalization between 0,1
+        :return: void
+        """
         self.timeseries_labeled["value"] = self.scaler.fit_transform(self.timeseries_labeled[["value"]])
 
-    def isanomaly(self, cursor):
+    def is_anomaly(self, cursor):
+        """
+        Is the current position a anomaly?
+        :param cursor: position in dataframe
+        :return: boolean
+        """
         if self.timeseries_labeled['anomaly'][cursor] == 1:
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     def get_series(self, labelled=True):
+        """
+        Return the current series labelled or unlabelled
+        :param labelled: boolean
+        :return: pandas dataframe
+        """
         if labelled:
             return self.timeseries_labeled
         return self.timeseries_unlabeled
 
     def get_name(self):
+        """
+        Get the current Filename if needed
+        :return: String
+        """
         return self.filename
 
     def __len__(self):
+        """
+        Get the length of the current dataframe
+        :return: int
+        """
         return self.timeseries_labeled['value'].size
 
 

@@ -4,13 +4,25 @@ import numpy as np
 
 
 class WindowStateEnvironment:
+    """
+    This Environment is sliding a window over the timeseries step by step. The window size can be configured
+    The Shape of the states is therefore of the form (1, window_size).
+    """
+
     def __init__(self, environment: TimeSeriesEnvironment, window_size=25):
+        """
+        Initialize the WindowStateEnvironment and wrapping the base environment
+        :param environment: TimeSeriesEnvironment
+        :param window_size: int
+        """
         self.env = environment
         self.window_size = window_size
 
-    SLIDE_WINDOW_SIZE = 25  # size of the slide window for SLIDE_WINDOW state and reward functions
-
     def __state(self):
+        """
+        The Statefunction returning an array of the window states
+        :return:
+        """
         if self.env.timeseries_cursor >= self.window_size:
             return [self.env.timeseries_labeled['value'][i + 1]
                     for i in range(self.env.timeseries_cursor - self.window_size, self.env.timeseries_cursor)]
@@ -18,6 +30,11 @@ class WindowStateEnvironment:
             return np.zeros(self.window_size)
 
     def __reward(self, action):
+        """
+        The Rewardfunction returning rewards for certain actions in the environment
+        :param action: type of action
+        :return: arbitrary reward
+        """
         if self.env.timeseries_cursor >= self.window_size:
             sum_anomaly = np.sum(self.env.timeseries_labeled['anomaly']
                                  [self.env.timeseries_cursor - self.window_size + 1:self.env.timeseries_cursor + 1])
@@ -47,6 +64,11 @@ class WindowStateEnvironment:
         return init_state
 
     def step(self, action):
+        """
+        Taking a step inside the base environment with the action input
+        :param action: certain action value
+        :return: S,A,R,S_,D tuple
+        """
         current_state = self.__state()
         # 1. get the reward of the action
         reward = self.__reward(action)
@@ -64,9 +86,18 @@ class WindowStateEnvironment:
         return current_state, action, reward, next_state, self.env.is_done(self.env.timeseries_cursor)
 
     def __len__(self):
+        """
+        Length of the current Timeseries
+        :return: int
+        """
         return len(self.env)
 
     def __getattr__(self, item):
+        """
+        Get the attribute of the base environment
+        :param item: String of field key
+        :return: attribute item of the base environment
+        """
         return getattr(self.env, item)
 
 

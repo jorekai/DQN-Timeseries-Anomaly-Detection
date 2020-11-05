@@ -15,8 +15,14 @@ class WindowStateEnvironment:
         :param environment: TimeSeriesEnvironment
         :param window_size: int
         """
-        self.env = environment
+        self.env = None
         self.window_size = window_size
+        if environment is None:
+            raise TypeError("Base environment must be instantiated")
+        elif isinstance(environment, TimeSeriesEnvironment):
+            self.env = environment
+        else:
+            raise TypeError("Input is not of type TimeSeriesEnvironment")
 
     def __state(self):
         """

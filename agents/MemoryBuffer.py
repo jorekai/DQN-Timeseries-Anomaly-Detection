@@ -6,13 +6,17 @@ from resources.Utils import load_object, store_object
 
 
 class MemoryBuffer:
-    def __init__(self, max, id):
+    def __init__(self, max, id, init_size=5000):
         self.memory = deque([], maxlen=max)
         self.id = "memory_{}.obj".format(id)
+        self.init_size = init_size
 
     def store(self, state, action, reward, nstate, done):
         # Store the experience in memory
-        self.memory.append((state, action, reward, nstate, done))
+        if len(self.memory) < self.memory.maxlen:
+            self.memory.append((state, action, reward, nstate, done))
+        else:
+            print("Memory is full can't append anymore.")
 
     def init_memory(self, env):
         # time measurement for memory initialization
@@ -26,7 +30,7 @@ class MemoryBuffer:
         else:
             while True:
                 # break if memory is full
-                if len(self.memory) >= self.memory.maxlen:
+                if len(self.memory) >= self.init_size:
                     break
                 # check if we need to reset env and still fill our memory
                 if env.is_done(env.timeseries_cursor):
@@ -44,7 +48,10 @@ class MemoryBuffer:
 
     def get_exp(self, batch_size):
         # Popping from the Memory Queue which should be filled randomly beforehand
-        return [self.memory.popleft() for _i in range(batch_size)]
+        samples = [self.memory.popleft() for _i in range(batch_size)]
+        for sample in samples:
+            self.memory.append(sample)
+        return samples
 
     def __len__(self):
         return len(self.memory)

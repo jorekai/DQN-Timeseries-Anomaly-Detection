@@ -68,8 +68,14 @@ class Simulator:
                 self.training_scores.append(rewards)
                 break
             # Experience Replay
-            if len(self.agent.memory) > self.agent.batch_size:
+        replay = 0
+        while True:
+            if replay <= 5:
+                print("Replay : ", replay)
                 self.agent.experience_replay()
+            else:
+                break
+            replay += 1
         # Target Model Update
         if self.episode % self.update_steps == 0:
             self.agent.update_target_model()

@@ -3,10 +3,10 @@ from tensorflow import keras
 
 class NeuralNetwork:
     def __init__(self, input_dim,
-                 input_neurons, optimizer_lr=0.001, output_dim=2):
+                 input_neurons, optimizer_lr=0.001, output_dim=2, hidden_neurons=24):
         self.input_dim = input_dim
         self.input_neurons = input_neurons
-        self.hidden_neurons = 24
+        self.hidden_neurons = hidden_neurons
         self.optimizer_lr = optimizer_lr
         self.output_dim = output_dim
         self.keras_model = self.build_model()
@@ -24,7 +24,6 @@ class NeuralNetwork:
         model.compile(loss='mse',  # Loss function: Mean Squared Error
                       optimizer=keras.optimizers.Adam(
                           lr=self.optimizer_lr))  # Optimizer: Adam (Feel free to check other options)
-        print(model.summary())
         return model
 
 

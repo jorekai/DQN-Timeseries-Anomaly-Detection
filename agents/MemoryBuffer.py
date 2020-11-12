@@ -16,7 +16,8 @@ class MemoryBuffer:
         if len(self.memory) < self.memory.maxlen:
             self.memory.append((state, action, reward, nstate, done))
         else:
-            print("Memory is full can't append anymore.")
+            self.memory.popleft()
+            self.memory.append((state, action, reward, nstate, done))
 
     def init_memory(self, env):
         # time measurement for memory initialization

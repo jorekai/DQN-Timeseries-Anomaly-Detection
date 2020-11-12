@@ -1,5 +1,6 @@
 import pickle
 import time
+import pandas as pd
 
 
 def pretty_print_df(dataframe, head=True):
@@ -27,3 +28,15 @@ def start_timer():
 
 def get_duration(timer):
     return time.time() - timer
+
+
+def load_csv(path, separator=",", labelled=True):
+    if labelled:
+        return pd.read_csv(path, usecols=[1, 2], header=0, sep=separator,
+                           names=['value', 'anomaly'],
+                           encoding="utf-8")
+    else:
+        return pd.read_csv(path, usecols=[1], header=0, sep=separator,
+                           names=['value'],
+                           encoding="utf-8")
+    raise AttributeError("The path of the csv file might not be found.")

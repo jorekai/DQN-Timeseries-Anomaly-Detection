@@ -1,17 +1,15 @@
-import pandas as pd
 import os
 from sklearn.preprocessing import MinMaxScaler
 
 from resources import Plots
 from environment.Config import ConfigTimeSeries
+from resources.Utils import load_csv
 
 
 class TimeSeriesEnvironment:
-    def __init__(self, directory="../ts_data/",
-                 config=ConfigTimeSeries(normal=0, anomaly=1, reward_correct=1, reward_incorrect=-1,
-                                         action_space=[0, 1], seperator=",", boosted=False),
+    def __init__(self, config=ConfigTimeSeries(),
                  filename="Test/SmallData.csv", verbose=False,
-                 scaler=MinMaxScaler(), window=False):
+                 scaler=MinMaxScaler()):
         """
         Initialization of one TimeSeries, should have suitable methods to prepare DataScience
         :param directory: Path to The Datasets
@@ -20,11 +18,10 @@ class TimeSeriesEnvironment:
         :param verbose: if True, then prints __str__
         """
         self.filename = filename
-        self.file = os.path.join(directory + self.filename)
+        self.file = os.path.join(config.directory + self.filename)
         self.cfg = config
-        self.sep = config.seperator
-        self.boosted = config.boosted
-        self.window = window
+        self.sep = config.separator
+        self.window = config.window
         self.scaler = scaler
 
         self.action_space_n = len(self.cfg.action_space)
@@ -33,21 +30,13 @@ class TimeSeriesEnvironment:
         self.timeseries_cursor_init = 0
         self.timeseries_states = []
         self.done = False
-
-        self.isdone = False
-
-        self.timeseries_labeled = pd.read_csv(self.file, usecols=[1, 2], header=0, sep=self.sep,
-                                              names=['value', 'anomaly'],
-                                              encoding="utf-8")
-
-        self.timeseries_unlabeled = pd.read_csv(self.file, usecols=[1], header=0, sep=self.sep,
-                                                names=['value'],
-                                                encoding="utf-8")
+        self.timeseries_labeled = load_csv(self.file)
+        self.timeseries_unlabeled = load_csv(self.file, labelled=False)
 
         if verbose:
-            print(self.__str__())
+            print(self.__info())
 
-    def __str__(self):
+    def __info(self):
         """
         :return: String Representation of the TimeSeriesEnvironment Class, mainly for debug information
         """
@@ -98,13 +87,13 @@ class TimeSeriesEnvironment:
         """
         self.timeseries_cursor += 1
 
-    def is_done(self, cursor):
+    def is_done(self):
         """
         Are we done with the current timeseries?
         :param cursor: position in dataframe
         :return: boolean
         """
-        if cursor >= len(self.timeseries_labeled) - 1:
+        if self.timeseries_cursor >= len(self.timeseries_labeled) - 1:
             self.done = True
             return True
         else:
@@ -118,13 +107,13 @@ class TimeSeriesEnvironment:
         """
         self.timeseries_labeled["value"] = self.scaler.fit_transform(self.timeseries_labeled[["value"]])
 
-    def is_anomaly(self, cursor):
+    def is_anomaly(self):
         """
         Is the current position a anomaly?
         :param cursor: position in dataframe
         :return: boolean
         """
-        if self.timeseries_labeled['anomaly'][cursor] == 1:
+        if self.timeseries_labeled['anomaly'][self.timeseries_cursor] == 1:
             return True
         else:
             return False
@@ -139,7 +128,7 @@ class TimeSeriesEnvironment:
             return self.timeseries_labeled
         return self.timeseries_unlabeled
 
-    def get_name(self):
+    def __str__(self):
         """
         Get the current Filename if needed
         :return: String
@@ -155,13 +144,13 @@ class TimeSeriesEnvironment:
 
 
 if __name__ == '__main__':
-    ts = TimeSeriesEnvironment(verbose=False,
-                               config=ConfigTimeSeries(normal=0, anomaly=1, reward_correct=1, reward_incorrect=-1,
-                                                       action_space=[0, 1], seperator=",", boosted=False),
+    ts = TimeSeriesEnvironment(verbose=True,
+                               config=ConfigTimeSeries(),
                                filename="./Test/SmallData.csv")
     ts.reset()
     count = 0
     ts.normalize_timeseries()
     while count < len(ts.timeseries_labeled) - 1:
         count += 1
-    Plots.plot_series(ts.get_series(), name=ts.get_name())
+    Plots.plot_series(ts.get_series(), name=str(ts))
+    print(str(ts))

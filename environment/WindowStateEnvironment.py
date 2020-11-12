@@ -41,7 +41,7 @@ class WindowStateEnvironment:
         :param action: type of action
         :return: arbitrary reward
         """
-        if self.env.timeseries_cursor >= self.window_size:
+        if self.env.timeseries_cursor >= self.window_size and not self.env.isdone:
             if self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor] == 1:
                 if action == 0:
                     return -5  # false negative, miss alarm
@@ -49,7 +49,7 @@ class WindowStateEnvironment:
                     return 5  # 10      # true positive
             if self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor] == 0:
                 if action == 1:
-                    return -5  # f
+                    return -5
         return 0
 
     def reset(self):

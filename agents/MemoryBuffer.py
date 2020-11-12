@@ -2,6 +2,10 @@ import os
 import random
 import time
 from collections import deque
+
+from environment.BaseEnvironment import TimeSeriesEnvironment
+from environment.BinaryStateEnvironment import BinaryStateEnvironment
+from environment.Config import ConfigTimeSeries
 from resources.Utils import load_object, store_object
 
 
@@ -19,13 +23,13 @@ class MemoryBuffer:
             self.memory.popleft()
             self.memory.append((state, action, reward, nstate, done))
 
-    def init_memory(self, env):
+    def init_memory(self, env, load=False):
         # time measurement for memory initialization
         init_time = time.time()
         # resetting environment once
         env.reset()
         # try to load memory from local file
-        if os.path.isfile(self.id):
+        if os.path.isfile(self.id) and load:
             self.memory = load_object(self.id)
         # try to init memory by taking random steps in our environment until the deque is full
         else:
@@ -49,9 +53,13 @@ class MemoryBuffer:
 
     def get_exp(self, batch_size):
         # Popping from the Memory Queue which should be filled randomly beforehand
-        samples = [self.memory.popleft() for _i in range(batch_size)]
-        for sample in samples:
-            self.memory.append(sample)
+        if len(self.memory) > batch_size:
+            samples = [self.memory.popleft() for _i in range(batch_size)]
+            for sample in samples:
+                self.memory.append(sample)
+        else:
+            raise Exception(
+                "There are only {} samples left, batch size of {} is too big.".format(len(self.memory), batch_size))
         return samples
 
     def __len__(self):
@@ -88,3 +96,12 @@ class PrioritizedMemoryBuffer(MemoryBuffer):
     def update_priority(self):
         # update priority of sample
         pass
+
+
+if __name__ == '__main__':
+    config = ConfigTimeSeries()
+    env = BinaryStateEnvironment(
+        TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData.csv", config=config))
+    memory = MemoryBuffer(max=50000, id="binary_agent", init_size=10)
+    memory.init_memory(env)
+    print(memory.get_exp(5))

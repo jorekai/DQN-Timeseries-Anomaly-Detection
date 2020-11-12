@@ -42,21 +42,15 @@ class WindowStateEnvironment:
         :return: arbitrary reward
         """
         if self.env.timeseries_cursor >= self.window_size:
-            sum_anomaly = np.sum(self.env.timeseries_labeled['anomaly']
-                                 [self.env.timeseries_cursor - self.window_size + 1:self.env.timeseries_cursor + 1])
-            if sum_anomaly == 0:
-                if action == 0:
-                    return 1  # 0.1      # true negative
-                else:
-                    return -1  # 0.5     # false positive, error alarm
-
-            if sum_anomaly > 0:
+            if self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor] == 1:
                 if action == 0:
                     return -5  # false negative, miss alarm
                 else:
                     return 5  # 10      # true positive
-        else:
-            return 0
+            if self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor] == 0:
+                if action == 1:
+                    return -5  # f
+        return 0
 
     def reset(self):
         """

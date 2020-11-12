@@ -38,7 +38,7 @@ class Simulator:
             start_testing = self.__can_test()
             if not start_testing:
                 info = self.__training_iteration()
-                # print("Training episode {} took {} seconds {}".format(self.episode, utils.get_duration(start), info))
+                print("Training episode {} took {} seconds {}".format(self.episode, utils.get_duration(start), info))
                 self.__next__()
             if start_testing:
                 self.__testing_iteration()
@@ -67,6 +67,8 @@ class Simulator:
             if done:
                 self.training_scores.append(rewards)
                 break
+
+        if len(self.agent.memory) > self.agent.batch_size:
             self.agent.experience_replay()
 
         # Target Model Update

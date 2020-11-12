@@ -34,7 +34,7 @@ class MemoryBuffer:
                 if len(self.memory) >= self.init_size:
                     break
                 # check if we need to reset env and still fill our memory
-                if env.is_done(env.timeseries_cursor):
+                if env.is_done():
                     env.reset()
                 # get random action
                 action = random.randrange(env.action_space_n)

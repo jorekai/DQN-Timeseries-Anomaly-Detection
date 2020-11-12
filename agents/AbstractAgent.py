@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from copy import copy
-import tensorflow as tf
 
 
 class AbstractAgent(ABC):

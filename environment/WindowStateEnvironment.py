@@ -31,7 +31,7 @@ class WindowStateEnvironment:
         """
         if self.env.timeseries_cursor >= self.window_size:
             return [self.env.timeseries_labeled['value'][i + 1]
-                    for i in range(self.env.timeseries_cursor - self.window_size, self.env.timeseries_cursor)]
+                    for i in range(self.timeseries_cursor - self.window_size, self.timeseries_cursor)]
         else:
             return np.zeros(self.window_size)
 
@@ -41,13 +41,13 @@ class WindowStateEnvironment:
         :param action: type of action
         :return: arbitrary reward
         """
-        if self.env.timeseries_cursor >= self.window_size and not self.env.isdone:
-            if self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor] == 1:
+        if self.timeseries_cursor >= self.window_size and not self.done:
+            if self.timeseries_labeled['anomaly'][self.timeseries_cursor] == 1:
                 if action == 0:
                     return -5  # false negative, miss alarm
                 else:
                     return 5  # 10      # true positive
-            if self.env.timeseries_labeled['anomaly'][self.env.timeseries_cursor] == 0:
+            if self.timeseries_labeled['anomaly'][self.timeseries_cursor] == 0:
                 if action == 1:
                     return -5
         return 0
@@ -57,8 +57,8 @@ class WindowStateEnvironment:
         Reset the current Series to the first Value.
         :return: initial state
         """
-        self.env.timeseries_cursor = self.env.timeseries_cursor_init
-        self.env.normalize_timeseries()
+        self.env.timeseries_cursor = self.timeseries_cursor_init
+        self.normalize_timeseries()
         self.env.done = False
         init_state = self.__state()
         return init_state
@@ -70,20 +70,16 @@ class WindowStateEnvironment:
         :return: S,A,R,S_,D tuple
         """
         current_state = self.__state()
-        # 1. get the reward of the action
         reward = self.__reward(action)
 
-        # 2. get the next state and the done flag after the action
-        self.env.update_cursor()
+        self.update_cursor()
 
-        if self.env.timeseries_cursor >= len(self.env):
-            self.env.isdone = 1
+        if self.is_done():
             next_state = []
         else:
-            self.env.isdone = 0
             next_state = self.__state()
 
-        return current_state, action, reward, next_state, self.env.is_done(self.env.timeseries_cursor)
+        return current_state, action, reward, next_state, self.is_done()
 
     def __len__(self):
         """
@@ -102,9 +98,8 @@ class WindowStateEnvironment:
 
 
 if __name__ == '__main__':
-    config = ConfigTimeSeries(seperator=",", window=1)
     env = WindowStateEnvironment(
-        TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData.csv", config=config, window=True))
+        TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData.csv", config=ConfigTimeSeries()))
     env.reset()
     idx = 1
     while True:

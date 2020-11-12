@@ -1,27 +1,25 @@
-# DQN-Timeseries-Anomaly-Detection
+# DQN-Timeseries-Anomaly-Detection (Work in Progress)
 
 This Repository focuses on Anomaly Detection with Reinforcement Learning. Starting with basic DQN Agents exploring Timeseries, modelled as an environment.
-The idea is taken from https://github.com/chengqianghuang/exp-anomaly-detector but I went with Tensorflow 2 as backend. The intermediate Goal is to run some Benchmarks on the most common Anomaly Detection Benchmark Datasets. In Future I might be able to support bi-/multivariate Timeseries. The Problem while working with univariate Timeseries is the small state space and strongly dependence on domain space of the Timeseries.
+The idea is taken from https://github.com/chengqianghuang/exp-anomaly-detector. The intermediate Goal is to run some Benchmarks on the most common Anomaly Detection Benchmark Datasets. In Future I might be able to support bi-/multivariate Timeseries. The Problem while working with univariate Timeseries is the small state space and strongly dependence on domain space of the Timeseries.
 
 # Prerequesites
 
 1. create a conda environment from req.txt by running:
   ```$ conda create --name <env> --file <this file>``` or by installing the environment via yml file 
   ```conda env create -f <environment-name>.yml```
-2. This might be different for Linux Distributions or MacOS. I still need to test on my Linux system 
+2. This might be different for Linux Distributions or MacOS. I still need to test on my Linux system
+3. If not already installed, install git LFS from https://git-lfs.github.com
 # Work in Progress
 
-1. (NOW) Refactor the experience replay so that we replay at a Starting Point of X samples and fill up with every following 
-received transition. ATM the replay buffer is emptied after the first replay of the MAX samples.
-
-2. (FUTURE) Try to implement Prioritized Experience Replay, this is needed for bigger datasets later on when we cant sample a
+1. (FUTURE) Try to implement Prioritized Experience Replay, this is needed for bigger datasets later on when we cant sample a
 complete datset.
 
-3. (FUTURE) Maybe look into the behavior of LSTMS and if they can be used for our problem
+2. (FUTURE) Maybe look into the behavior of LSTMS and if they can be used for our problem
 
-4. (FUTURE) Refine the n-step Q Learning and verify if it is correct
+3. (FUTURE) Refine the n-step Q Learning and verify if it is correct
 
-5. (FUTURE) Include some testing for the environment and the agents
+4. (FUTURE) Include some testing for the environment and the agents
 
 # Documentation
 ## Overview

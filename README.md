@@ -12,14 +12,16 @@ The idea is taken from https://github.com/chengqianghuang/exp-anomaly-detector. 
 3. If not already installed, install git LFS from https://git-lfs.github.com
 # Work in Progress
 
-1. (FUTURE) Try to implement Prioritized Experience Replay, this is needed for bigger datasets later on when we cant sample a
+1. (Current) Verify if DDQN is correctly implemented. 
+
+2. (Prio. 2) Try to implement Prioritized Experience Replay, this is needed for bigger datasets later on when we cant sample a
 complete datset.
 
-2. (FUTURE) Maybe look into the behavior of LSTMS and if they can be used for our problem
+3. (Prio. 3) Maybe look into the behavior of LSTMS and if they can be used for our problem
 
-3. (FUTURE) Refine the n-step Q Learning and verify if it is correct
+4. (Prio. 4) Refine the n-step Q Learning and verify if it is correct
 
-4. (FUTURE) Include some testing for the environment and the agents
+5. (Prio. 5) Include some testing for the environment and the agents
 
 # Documentation
 ## Overview

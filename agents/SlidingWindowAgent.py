@@ -11,9 +11,10 @@ class SlidingWindowAgent(AbstractAgent):
     One can use all superclass hooks for training the agent.
     """
 
-    def __init__(self, window_size=25, *args, **kwargs):
+    def __init__(self, lstm=False, window_size=25, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.window_size = window_size
+        self.lstm = lstm
 
     def action(self, state):
         """
@@ -21,15 +22,18 @@ class SlidingWindowAgent(AbstractAgent):
         :param state: The state, representing the Sliding Window of datapoints in our Timeseries
         :return: returns an action in our action space ∈ (0, 1)
         """
+        x = np.array(state).reshape(1, self.window_size)
+        if self.lstm:
+            x = np.array(state).reshape(1, 1, self.window_size)
         if np.random.rand() <= self.epsilon:
             # explore environment
             return pyrand.randrange(self.action_space)
         elif self.epsilon == 0:
             # exploit from target net (evaluation)
-            action_values = self.target_dqn.predict(np.array(state).reshape(1, self.window_size))
+            action_values = self.target_dqn.predict(x)
         else:
             # exploit from train net (training)
-            action_values = self.dqn.predict(np.array(state).reshape(1, self.window_size))
+            action_values = self.dqn.predict(x)
         # return index of max action in action list
         return np.argmax(action_values)
 
@@ -71,6 +75,8 @@ class SlidingWindowAgent(AbstractAgent):
         # Reshape for Keras Fitting Function
         x_reshape = np.array(x)
         y_reshape = np.array(y)
+        if self.lstm:
+            x_reshape = np.expand_dims(x_reshape, axis=1)
         self.hist = self.dqn.fit(x_reshape, y_reshape, epochs=self.fit_epoch, verbose=0)
 
     def predict_on_batch(self, batch):
@@ -82,9 +88,15 @@ class SlidingWindowAgent(AbstractAgent):
         # Convert to numpy for speed by vectorization
         st = np.array(list(list(zip(*batch))[0]))
         nst = np.array(list(list(zip(*batch))[3]))
+        if self.lstm:
+            st = np.expand_dims(st, axis=1)
+            nst = np.expand_dims(nst, axis=1)
 
         # safety check
-        check = np.zeros((self.batch_size, self.window_size))
+        if not self.lstm:
+            check = np.zeros((self.batch_size, self.window_size))
+        elif self.lstm:
+            check = np.zeros((self.batch_size, 1, self.window_size))
         verifyBatchShape(st, check.shape)
         verifyBatchShape(nst, check.shape)
 

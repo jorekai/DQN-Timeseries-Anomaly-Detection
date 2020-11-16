@@ -33,9 +33,9 @@ class NeuralNetwork:
         lstm_autoencoder = keras.Sequential()
         # Encoder
         lstm_autoencoder.add(
-            keras.layers.LSTM(self.input_dim + 1, activation='tanh',
-                              batch_input_shape=(512, 1, self.input_dim),
-                              return_sequences=True, stateful=True))
+            keras.layers.LSTM(self.input_dim, activation='tanh',
+                              batch_input_shape=(None, 1, self.input_dim),
+                              return_sequences=True))
         lstm_autoencoder.add(keras.layers.LSTM(256, activation='tanh', return_sequences=True))
         lstm_autoencoder.add(keras.layers.Flatten())
         lstm_autoencoder.add(keras.layers.Dense(2, activation='linear'))

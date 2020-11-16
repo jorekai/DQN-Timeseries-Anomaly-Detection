@@ -84,7 +84,9 @@ class SlidingWindowAgent(AbstractAgent):
         nst = np.array(list(list(zip(*batch))[3]))
 
         # safety check
-        verifyBatchShape(st, np.zeros((self.batch_size, self.window_size)).shape)
+        check = np.zeros((self.batch_size, self.window_size))
+        verifyBatchShape(st, check.shape)
+        verifyBatchShape(nst, check.shape)
 
         # predict on the batches with the model as well as the target values
         st_predict = self.dqn.predict(st)

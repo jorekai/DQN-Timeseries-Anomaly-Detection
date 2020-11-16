@@ -1,6 +1,7 @@
 # custom modules
 from resources import Utils as utils
 from resources.Plots import plot_actions
+import numpy as np
 
 
 class Simulator:
@@ -44,6 +45,7 @@ class Simulator:
                 self.__testing_iteration()
                 print("Testing episode {} took {} seconds".format(self.episode, utils.get_duration(start)))
                 break
+            print(self.agent.epsilon)
             self.agent.anneal_epsilon()
         plot_actions(self.test_actions[0], getattr(self.env, "timeseries_labeled"))
         return True
@@ -66,15 +68,17 @@ class Simulator:
             state = nstate
             if done:
                 self.training_scores.append(rewards)
+                print("Training Score now: ", np.sum(rewards))
+                self.agent.update_target_model()
                 break
 
-        if len(self.agent.memory) > self.agent.batch_size:
-            self.agent.experience_replay()
+            if len(self.agent.memory) > self.agent.batch_size:
+                self.agent.experience_replay()
 
         # Target Model Update
-        if self.episode % self.update_steps == 0:
-            self.agent.update_target_model()
-            return "Update Target Model"
+        # if self.episode % self.update_steps == 0:
+        #     self.agent.update_target_model()
+        #     return "Update Target Model"
         return ""
 
     def __testing_iteration(self):

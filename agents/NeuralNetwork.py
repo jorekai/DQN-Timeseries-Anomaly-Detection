@@ -3,13 +3,16 @@ from tensorflow import keras
 
 class NeuralNetwork:
     def __init__(self, input_dim,
-                 input_neurons, optimizer_lr=0.001, output_dim=2, hidden_neurons=24):
+                 input_neurons, optimizer_lr=0.001, output_dim=2, hidden_neurons=24, type="standard"):
         self.input_dim = input_dim
         self.input_neurons = input_neurons
         self.hidden_neurons = hidden_neurons
         self.optimizer_lr = optimizer_lr
         self.output_dim = output_dim
-        self.keras_model = self.build_model()
+        if type == "standard":
+            self.keras_model = self.build_model()
+        elif type == "lstm":
+            self.keras_model = self.build_lstm()
 
     def build_model(self):
         model = keras.Sequential()  # https://keras.io/models/sequential/
@@ -26,26 +29,19 @@ class NeuralNetwork:
                           lr=self.optimizer_lr))  # Optimizer: Adam (Feel free to check other options)
         return model
 
+    def build_lstm(self):
+        lstm_autoencoder = keras.Sequential()
+        # Encoder
+        lstm_autoencoder.add(
+            keras.layers.LSTM(self.input_dim + 1, activation='tanh',
+                              batch_input_shape=(512, 1, self.input_dim),
+                              return_sequences=True, stateful=True))
+        lstm_autoencoder.add(keras.layers.LSTM(256, activation='tanh', return_sequences=True))
+        lstm_autoencoder.add(keras.layers.Flatten())
+        lstm_autoencoder.add(keras.layers.Dense(2, activation='linear'))
+        lstm_autoencoder.compile(loss='mse',  # Loss function: Mean Squared Error
+                                 optimizer=keras.optimizers.Adam(
+                                     lr=0.001))  # Optimaizer: Adam (Feel free to check other options)
 
-def build_lstm():
-    """
-    WIP
-    :return:
-    """
-    lstm_autoencoder = keras.Sequential()
-    # Encoder
-    lstm_autoencoder.add(
-        keras.layers.LSTM(32, activation='relu', input_shape=(),
-                          return_sequences=True))
-    lstm_autoencoder.add(keras.layers.LSTM(16, activation='relu', return_sequences=False))
-    lstm_autoencoder.add(keras.layers.RepeatVector(256))
-    # Decoder
-    lstm_autoencoder.add(keras.layers.LSTM(16, activation='relu', return_sequences=True))
-    lstm_autoencoder.add(keras.layers.LSTM(32, activation='relu', return_sequences=True))
-    lstm_autoencoder.add(keras.layers.TimeDistributed(keras.layers.Dense(2)))
-    lstm_autoencoder.compile(loss='mse',  # Loss function: Mean Squared Error
-                             optimizer=keras.optimizers.Adam(
-                                 lr=0.001))  # Optimaizer: Adam (Feel free to check other options)
-
-    lstm_autoencoder.summary()
-    return lstm_autoencoder
+        lstm_autoencoder.summary()
+        return lstm_autoencoder

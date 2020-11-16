@@ -148,9 +148,10 @@ if __name__ == '__main__':
                                config=ConfigTimeSeries(),
                                filename="./Test/SmallData.csv")
     ts.reset()
-    count = 0
+    count = 1
     ts.normalize_timeseries()
-    while count < len(ts.timeseries_labeled) - 1:
+    while not ts.done:
         count += 1
     Plots.plot_series(ts.get_series(), name=str(ts))
     print(str(ts))
+    print(count)

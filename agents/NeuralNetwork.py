@@ -37,6 +37,8 @@ class NeuralNetwork:
                               batch_input_shape=(None, 1, self.input_dim),
                               return_sequences=True))
         lstm_autoencoder.add(keras.layers.LSTM(256, activation='tanh', return_sequences=True))
+        # lstm_autoencoder.add(
+        #    keras.layers.Dense(self.hidden_neurons, activation='relu'))  # Layer 2 -> [hidden1]
         lstm_autoencoder.add(keras.layers.Flatten())
         lstm_autoencoder.add(keras.layers.Dense(2, activation='linear'))
         lstm_autoencoder.compile(loss='mse',  # Loss function: Mean Squared Error

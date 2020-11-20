@@ -20,6 +20,7 @@ class BinaryStateAgent(AbstractAgent):
             # action_values = self.target_dqn.predict(np.array(state).reshape(1, 2))
             lstm_input = np.expand_dims(state, axis=0)
             action_values = self.dqn.predict(lstm_input)
+            print(action_values)
         else:
             # print(state.shape)
             # comment in for not lstm
@@ -67,10 +68,14 @@ class BinaryStateAgent(AbstractAgent):
             # print(target_f)
             # target_f[action] = target
             y.append(target)
+            # if 5 in reward or -5 in reward:
+            # print(state, target)
             index += 1
         # Reshape for Keras Fitting Function
         x_reshape = np.array(x)
         y_reshape = np.array(y)
+        # print(x_reshape)
+        # print(y_reshape)
         self.hist = self.dqn.fit(x_reshape, y_reshape, epochs=self.fit_epoch, verbose=0)
 
     def predict_on_batch(self, batch):

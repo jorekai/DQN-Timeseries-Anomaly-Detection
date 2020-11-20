@@ -29,8 +29,8 @@ class WindowStateEnvironment:
         The Statefunction returning an array of the window states
         :return:
         """
-        if self.env.timeseries_cursor >= self.window_size:
-            return [self.env.timeseries_labeled['value'][i + 1]
+        if self.timeseries_cursor >= self.window_size:
+            return [self.timeseries_labeled['value'][i + 1]
                     for i in range(self.timeseries_cursor - self.window_size, self.timeseries_cursor)]
         else:
             return np.zeros(self.window_size)

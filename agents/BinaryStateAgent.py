@@ -17,9 +17,15 @@ class BinaryStateAgent(AbstractAgent):
         if np.random.rand() <= self.epsilon:
             return pyrand.randrange(self.action_space)  # Explore Actions by percentage epsilon
         if self.epsilon == 0:  # greedy action choice for testing the agents performance in our environment
-            action_values = self.target_dqn.predict(np.array(state).reshape(1, 2))
+            # action_values = self.target_dqn.predict(np.array(state).reshape(1, 2))
+            lstm_input = np.expand_dims(state, axis=0)
+            action_values = self.dqn.predict(lstm_input)
         else:
-            action_values = self.dqn.predict(np.array(state).reshape(1, 2))
+            # print(state.shape)
+            # comment in for not lstm
+            # action_values = self.dqn.predict(np.array(state).reshape(1, 2))
+            lstm_input = np.expand_dims(state, axis=0)
+            action_values = self.dqn.predict(lstm_input)
         return np.argmax(action_values)
 
     def experience_replay(self):
@@ -33,6 +39,8 @@ class BinaryStateAgent(AbstractAgent):
         """
         # get a sample from the memory buffer
         minibatch = self.memory.get_exp(self.batch_size)
+
+        # print(minibatch)
 
         # create default input arrays for the fitting of the model
         x = []
@@ -53,9 +61,12 @@ class BinaryStateAgent(AbstractAgent):
             else:  # Non terminal State: Update the Q-Values
                 target = reward + self.gamma * nextstate_action_predict_target[
                     np.argmax(nextstate_action_predict_model)]  # Using Q-Value from our Target Network follows DDQN
-            target_f = state_predict[index]
-            target_f[action] = target
-            y.append(target_f)
+            # print("TARGET")
+            # print(target)
+            target_f = state_predict
+            # print(target_f)
+            # target_f[action] = target
+            y.append(target)
             index += 1
         # Reshape for Keras Fitting Function
         x_reshape = np.array(x)
@@ -70,14 +81,36 @@ class BinaryStateAgent(AbstractAgent):
         """
         # Convert to numpy for speed by vectorization
         st = np.array(list(list(zip(*batch))[0]))
+        actions = np.array(list(list(zip(*batch))[1]))
         nst = np.array(list(list(zip(*batch))[3]))
 
+        # next state shape is binary tree format so we need to split between the action 0 and 1 prediction
+        nst = np.squeeze(np.split(nst, 2, axis=1))
+        nst_a0 = nst[0]
+        nst_a1 = nst[1]
+        # print(st.shape)
+        # print(actions.shape)
+        # print(nst_a0.shape)
+        # print(nst_a1.shape)
         # safety check if every input consists of a binary feature
-        verifyBatchShape(st, np.zeros((self.batch_size, 2)).shape)
+        verifyBatchShape(st, np.zeros((self.batch_size, st[0].shape[0], 2)).shape)
 
         # predict on the batches with the model as well as the target values
         st_predict = self.dqn.predict(st)
-        nst_predict = self.dqn.predict(nst)
-        nst_predict_target = self.target_dqn.predict(nst)
+        nst0_predict = self.dqn.predict(nst_a0)
+        nst0_predict_target = self.target_dqn.predict(nst_a0)
+        nst1_predict = self.dqn.predict(nst_a1)
+        nst1_predict_target = self.target_dqn.predict(nst_a1)
+
+        nst_predict = np.stack((np.amax(nst0_predict, axis=1),
+                                np.amax(nst1_predict, axis=1)),
+                               axis=-1)
+
+        nst_predict_target = np.stack((np.amax(nst0_predict_target, axis=1),
+                                       np.amax(nst1_predict_target, axis=1)),
+                                      axis=-1)
+
+        # print(nst_predict)
+        # print(nst_predict_target)
 
         return st_predict, nst_predict, nst_predict_target

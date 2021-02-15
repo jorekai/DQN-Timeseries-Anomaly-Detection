@@ -7,8 +7,7 @@ from resources.Utils import load_csv
 
 
 class TimeSeriesEnvironment:
-    def __init__(self, config=ConfigTimeSeries(),
-                 filename="Test/SmallData.csv", verbose=False,
+    def __init__(self, filename, config=ConfigTimeSeries(), verbose=False,
                  scaler=MinMaxScaler()):
         """
         Initialization of one TimeSeries, should have suitable methods to prepare DataScience
@@ -141,17 +140,3 @@ class TimeSeriesEnvironment:
         :return: int
         """
         return self.timeseries_labeled['value'].size
-
-
-if __name__ == '__main__':
-    ts = TimeSeriesEnvironment(verbose=True,
-                               config=ConfigTimeSeries(),
-                               filename="./Test/SmallData.csv")
-    ts.reset()
-    count = 1
-    ts.normalize_timeseries()
-    while not ts.done:
-        count += 1
-    Plots.plot_series(ts.get_series(), name=str(ts))
-    print(str(ts))
-    print(count)

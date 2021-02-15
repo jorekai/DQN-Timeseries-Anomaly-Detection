@@ -10,7 +10,7 @@ class BinaryStateEnvironment:
     overriding the methods to use for RL-Computations.
     """
 
-    def __init__(self, environment: TimeSeriesEnvironment, steps=5):
+    def __init__(self, environment: TimeSeriesEnvironment, steps=25):
         """
         Initializing the BinaryStateEnv by wrapping the BaseEnvironment
         :param environment: TimeSeriesEnvironment
@@ -27,8 +27,9 @@ class BinaryStateEnvironment:
 
     def __state(self, previous_state=[]):
         """
-        :param action: Our state Value consists of the timeseries value and the previous taken action: [0.123, 1] or [0.123, 0]
-        :return: The Value of the current position, states with the same value are treated the same way
+        The state function is returning the current state as a binary feature of the input time series
+        :param previous_state: [[t_1, a_1],[t_2, a_2],...,[t_steps, a_steps]]
+        :return: np.array(float32)
         """
         if self.timeseries_cursor == self.steps:
             state = []
@@ -45,8 +46,8 @@ class BinaryStateEnvironment:
                                      [[self.timeseries_labeled['value'][self.timeseries_cursor], 0]]))
             state1 = np.concatenate((previous_state[1:self.steps],
                                      [[self.timeseries_labeled['value'][self.timeseries_cursor], 1]]))
-
-            return np.array([state0, state1], dtype='float32')
+            combined = np.array([state0, state1], dtype='float32')
+            return combined
 
     def __reward(self):
         """
@@ -111,14 +112,15 @@ class BinaryStateEnvironment:
 
 if __name__ == '__main__':
     env = BinaryStateEnvironment(
-        TimeSeriesEnvironment(verbose=True, filename="./Test/SmallData.csv", config=ConfigTimeSeries()))
-    env.reset()
+        TimeSeriesEnvironment(verbose=True, filename="./A1Benchmark/real_1.csv", config=ConfigTimeSeries()))
+    state = env.reset()
     idx = 1
     while True:
         idx += 1
-        state, reward, done, [] = env.step(1)
-        print(state, reward, done, [])
         print(state.shape)
+        nstate, reward, done, [] = env.step(1)
+        print(state, 1, reward[1], nstate[1], done)
+        state = nstate[1]
         if done:
             print(idx)
             break

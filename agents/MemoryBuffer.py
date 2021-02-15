@@ -27,7 +27,7 @@ class MemoryBuffer:
         # time measurement for memory initialization
         init_time = time.time()
         # resetting environment once
-        env.reset()
+        state = env.reset()
         # try to load memory from local file
         if os.path.isfile(self.id) and load:
             self.memory = load_object(self.id)
@@ -43,9 +43,10 @@ class MemoryBuffer:
                 # get random action
                 action = random.randrange(env.action_space_n)
                 # take step in env and append
-                state, action, reward, nstate, done = env.step(action)
+                nstate, reward, done, [] = env.step(action)
                 # store our memory in class
                 self.store(state, action, reward, nstate, done)
+                state = nstate[action]
             # store our memory locally to reduce loading time on next run
             store_object(self.memory, self.id)
             print("Memory is full, {} Samples stored. It took {} seconds".format(len(self.memory),
